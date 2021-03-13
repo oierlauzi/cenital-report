@@ -1,0 +1,52 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+
+El objetivo de un mezclador de vídeo es combinar las diversas fuentes de vídeo que pueden existir en un estudio de televisión, de forma que se obtenga una única salida para su emisión. La topología utilizada para la realización de esta mezcla final es similar para todos los mezcladores:\newline
+
+Todas las entradas llegan a una matriz de conmutación de N:2, siendo N el número de entradas. A esta matriz, más comúnmente se le conoce como punto de cruce o \textquote{cross-point} y su objetivo es seleccionar para cada una de sus dos salidas, programa y previo, una de las entradas -o en su defecto, ninguna. La filosofía consiste en que el realizador selecciona en el bus de previo la entrada que estará en aire en los instantes posteriores y llegado el momento, \textquote{corta} entre ambos buses, pasando la configuración del previo al programa y viceversa. Aún así, cuando no hay tiempo, se conmuta directamente en el bus de programa. La ventaja de utilizar el bus de previo es que en caso de error, ese error no se emite, ya que se tiene la opción de rectificar antes de cortar entre buses. En la figura \ref{fig:xpt}, se puede observar de forma sencilla como se comporta el \textquote{crosspoint} al cortar entre entradas.\newline
+
+
+
+\begin{figure}[H]
+    \centering
+
+    \caption{Diagrama de bloques del crosspoint}
+    \label{fig:xpt}
+\end{figure}
+
+Aun así, muchas veces interesa realizar una transición entre entradas, en lugar de un corte abrupto. Por ende, se introduce un generador de transiciones. La implementación de esta, puede ser variada, pero habitualmente, su comportamiento puede ser modelado por la siguiente ecuación, que en resumidas cuentas realiza una media ponderada entre los dos buses en base a una señal de control. Es importante tener en consideración que $V_{x}$ son valores linealizados, ya que si se usa esta ecuación con valores corregidos en gamma, la salida resultará ser colorimétricamente incorrecta.
+
+$$V_{out} = V_{in\ pgm} * C + V_{in\ pvw} * (1 - C)$$
+
+Pueden existir transiciones más avanzadas, que no pueden ser descritas por esta ecuación sino que requieren de elementos más avanzados para realizar desplazamientos, escalamientos o incluso efectos tridimensionales. También puede interesar previsualizar la transición antes de ponerla en juego, por lo que se incluye otro generador de transiciones para el bus de previo, tal y como se puede ver en la figura \ref{fig:trans}.\newline
+
+\begin{figure}[H]
+    \centering
+
+    \caption{Diagrama de bloques del mezclador con transiciones}
+    \label{fig:trans}
+\end{figure}
+
+
+Por último, solo queda introducir los \textquote{keyers}. Son los elementos más avanzados y su función es superponer señales a los buses de salida. Existen de diversos tipos, según el criterio utilizado para generar la transparencia:
+
+\begin{itemize}
+    \item \textbf{chroma-key:} Utiliza la información de color presente en la señal de vídeo para discriminar a una cierta gama de colores para que en esa parte la superposición se vuelva transparente.
+    \item \textbf{luma-key:} Utiliza la información de brillo presente en la señal de vídeo para discriminar partes en las que la señal sea mas oscura o clara que un valor umbral para que en esos lugares la superposición se vuelva transparente.
+    \item \textbf{linear-key:} Utiliza una segunda señal, habitualmente llamada alfa, que describe la transparencia de la superposición en cada punto.
+\end{itemize}
+
+Estos keyers pueden ser mezclados con los buses antes o después de la transición. Si se mezclan antes, se denominan \textquote{Upstream keyers} mientras que si se mezcla después, se llaman \textquote{Downstream keyers}. Nuevamente, un keyer puede estar monitorizándose en el bus previo o puede estar en aire en el bus de programa. Nótese que no es una suma habitual, sino que una mezcla como la definida para las transiciones. Naturalmente, se necesita expandir el número de buses del crosspoint para poder proveer a estos keyers con alguna señal con la que trabajar. Aunque en el diagrama de bloques \ref{fig:key} sólo se muestra un keyer por simplicidad, suele haber varios.\newline
+
+\begin{figure}[H]
+    \centering
+
+    \textit{Nota: Los sumadores mezclan la señal con la señal de salida provista por el keyer basándose en la señal de control generada por éste. Es posible su desconexión}
+    \caption{Diagrama de bloques del mezclador con keyers}
+    \label{fig:key}
+\end{figure}
+
+Con esto queda descrita la topología básica de un mezclador de vídeo. Sin embargo, en producciones más exigentes, se puede requerir tener más de un mezclador, por ejemplo para alimentar un video-wall o monitores de estudio. Por suerte, los mezcladores modernos cuentan con varios bancos de mezcla y efecto o M/E. Un banco M/E puede ser como el mezclador anteriormente descrito, por lo que se puede decir que los mezcladores de varios M/E están compuestos por varios mezcladores más sencillos. Esto abre la puerta a una opción muy potente: introducir a la entrada de un banco M/E, la salida de otro, de forma que se puedan generar composiciones más avanzadas.
+
+\end{document}

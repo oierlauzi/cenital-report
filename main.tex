@@ -1,0 +1,83 @@
+\documentclass{etsist_pfg}
+
+%Paquetes a usar
+\usepackage[utf8]{inputenc} %UTF-8
+\usepackage[english]{babel} %English
+\usepackage{blindtext}
+\usepackage{graphicx} \graphicspath{ {./img/} }%Images
+\usepackage{float}
+\usepackage{url} %Links
+\usepackage{listings} %Code
+\usepackage{csquotes} %Quotes
+\usepackage{biblatex} %References
+\usepackage[toc,page]{appendix} %Appendices
+
+%For splitting up in multiple files:
+%Must be last one
+\usepackage{subfiles}
+
+\addbibresource{refs.bib}
+
+%Metadata
+\title{Design and implementation of a software-based vision mixer}
+\author{Oier Lauzirika Zarrabeitia}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+%Abtract and Resumen
+\renewcommand{\abstractname}{Resumen}
+\begin{abstract}
+    \subfile{tex/Resumen}
+\end{abstract}
+
+\renewcommand{\abstractname}{Abstract}
+\begin{abstract}
+    \subfile{tex/Abstract}
+\end{abstract}
+
+%List of contents
+\tableofcontents
+
+\listoffigures
+
+\listoftables
+
+\unnumberedchapter{Preámbulo}
+\subfile{tex/Preambulo}
+
+%Contents
+\chapter{Introduction}
+\subfile{tex/01-Introduction}
+
+\chapter{State of the art}
+\subfile{tex/02-State of the art}
+
+\chapter{Involved technology}
+\subfile{tex/03-Involved technology}
+
+\chapter{Description}
+\subfile{tex/04-Description}
+
+\chapter{Results}
+\subfile{tex/05-Results}
+
+\chapter{Budget}
+\subfile{tex/06-Budget}
+
+\chapter{Conclusions}
+\subfile{tex/07-Conclusions}
+
+%Bibliography
+\printbibliography
+
+%Apendcies
+\begin{appendices}
+\chapter{Signed distance fields and its applications in computer graphics}
+\subfile{tex/A01-Signed distance fields and its applications in computer graphics}
+
+\end{appendices}
+
+
+\end{document}
