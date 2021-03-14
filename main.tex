@@ -3,20 +3,19 @@
 %Paquetes a usar
 \usepackage[utf8]{inputenc} %UTF-8
 \usepackage[english]{babel} %English
-\usepackage{blindtext}
 \usepackage{graphicx} \graphicspath{ {./img/} }%Images
-\usepackage{float}
+\usepackage{svg} %SVG images
+\usepackage{pdfpages} %Insert PDFs
 \usepackage{url} %Links
 \usepackage{listings} %Code
 \usepackage{csquotes} %Quotes
-\usepackage{biblatex} %References
-\usepackage[toc,page]{appendix} %Appendices
+\usepackage{float}
 
 %For splitting up in multiple files:
 %Must be last one
 \usepackage{subfiles}
 
-\addbibresource{refs.bib}
+\addbibresource{references.bib}
 
 %Metadata
 \title{Design and implementation of a software-based vision mixer}
@@ -24,9 +23,16 @@
 \date{\today}
 
 \begin{document}
-\maketitle
+%\maketitle %We'll make use of Primera Hoja.pdf
+\includepdf{misc/Primera Hoja.pdf}
 
-%Abtract and Resumen
+%Hoja en blanco
+\newpage
+\thispagestyle{empty}
+\
+\newpage
+
+%Resumen and abstract
 \renewcommand{\abstractname}{Resumen}
 \begin{abstract}
     \subfile{tex/Resumen}

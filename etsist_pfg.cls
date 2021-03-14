@@ -3,13 +3,16 @@
 %Telecomunicación (ETSIST) de la Universidad Politécnica de Madrid (UPM).
 %Punto 7.2 formato:
 %https://www.euitt.upm.es/uploaded/559/6_Guia_del_Alumno__feb21.pdf
+%Autor: Oier Lauzirika Zarrabeitia
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{etsist_pfg}[2021/07/01 Plantilla para proyecto de fin de grado]
+\ProvidesClass{etsist_pfg}[2021/03/13 Plantilla para proyecto de fin de grado]
 
 %Tipo de texto
-\LoadClass[a4paper, twoside]{report}
-\pagestyle{headings} % Mostrar capitulo y página en la parte superior
+%Hoja A4, estilo libro y tamaño de letra 11 (debe ser entre 10 y 12)
+%Mostrar capitulo y página en la parte superior
+\LoadClass[a4paper, twoside, 11pt]{report} 
+\pagestyle{headings}
 
 %Comando para añadir capitulos sin numerar
 \newcommand{\unnumberedchapter}[1]{\chapter*{#1}\addcontentsline{toc}{chapter}{#1}}
@@ -24,6 +27,12 @@
    bottom=2cm
 ]{geometry}
 
+%Citas estilo IEEE
+\usepackage[style=ieee]{biblatex}
+
+%Apendices
+\usepackage[toc,page]{appendix}
+
 %Requsitos
 \RequirePackage{xcolor}
 \RequirePackage{sectsty}
@@ -32,7 +41,7 @@
 %Colores
 \definecolor{URLColor}{RGB}{105,178,255}
 
-%URLS
+%URLs
 \PassOptionsToPackage{hyphens}{url}
 \RequirePackage{hyperref}
 \hypersetup{urlcolor=URLColor}
