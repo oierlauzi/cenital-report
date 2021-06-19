@@ -10,28 +10,32 @@
 
 %Tipo de texto
 %Hoja A4, estilo libro y tamaño de letra 11 (debe ser entre 10 y 12)
-%Mostrar capitulo y página en la parte superior
-\LoadClass[a4paper, twoside, 11pt]{report} 
+%Mostrar capitulo y página en la parte superior. Abrir capitulos en página
+%impar (derecha)
+\LoadClass[a4paper, twoside, openright, 11pt]{report} 
 \pagestyle{headings}
 
-%Comando para añadir capitulos sin numerar
+%Comando para añadir capítulos sin numerar
 \newcommand{\unnumberedchapter}[1]{\chapter*{#1}\addcontentsline{toc}{chapter}{#1}}
 
-%Margenes
-\usepackage[
+%Márgenes
+\RequirePackage[
    a4paper,
    twoside,
    inner=2cm, %Como maximo 2cm
-   outer=4cm, %Como maximo 4cm
+   outer=3cm, %Como maximo 4cm
    top=2cm,
    bottom=2cm
 ]{geometry}
 
 %Citas estilo IEEE
-\usepackage[style=ieee]{biblatex}
+\RequirePackage[style=ieee]{biblatex}
 
 %Apendices
-\usepackage[toc,page]{appendix}
+\RequirePackage[toc, page]{appendix}
+
+%Acronimos
+\RequirePackage[toc, acronym]{glossaries}
 
 %Requsitos
 \RequirePackage{xcolor}

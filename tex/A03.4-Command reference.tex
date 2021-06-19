@@ -1,0 +1,310 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+
+Cenital mixer exposes a command line interface (CLI) which allows performing any supported action. Currently this is the only way of controlling the mixer. This CLI has been implemented considering a multi-client architecture, this is, all the modifications performed by a client are broadcasted to the others, so that they can keep track of the state of the machine. The purpose of this section is to be a reference cheat-sheet for either manually setting up the mixer or developing applications that interact with it.\newline
+
+As mentioned earlier, currently this CLI is the only way to control the mixer. However, it is exposed using two different protocols. One of them is Web Sockets, which is a thin layer on top of HTTP that allows interaction with web applications. See Mozilla's documentation\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API}} for further references. A possible implementation in JavaScript is provided with the Web Control application's source code.\newline
+
+The other protocol is plain TCP, which pretends to be used by the rest of the applications and human managers. For developing applications that use it, please, refer to the chosen language's specific TCP socket library. For instance, for C++, Boost's ASIO is a good starting point. The simplest way for a human to connect to the mixer from a Unix machine is using the \texttt{nc} command:
+
+\begin{lstlisting}[language=bash]
+  $ nc <address> <port>
+\end{lstlisting}
+
+This will allow typing the commands referenced on this document and sending them to the mixer in order to perform manual changes. All the responses and state updates will also be displayed here.
+
+\subsection{Conventions}
+
+The commands described in this section follow some conventions. Therefore, in order to avoid repetitive explanations of these conventions, they will be explained once for all. The commands used here are pet examples and do not represent the real operation of the mixer, they just highlight a particular usage of the syntax. In all examples, a \textquote{+} at the beginning is to indicate that the message was sent to the mixer whilst a \textquote{-} signals that the message was received from the mixer.\newline
+
+This CLI is case sensitive. This means that the user must pay attention to the casing of the words. All commands are \textit{kebab-case}, but a client may decide to name elements with any casing. In addition, enumerations have all their letters \textit{camelCase}. Non ASCII characters such as tildes and \textquote{ñ}s have not been extensively tested. Avoid using them for increased stability.\newline
+
+\subsubsection{Token separation}
+A command can be considered as a collection of tokens. A token can be thought of as a word, this is, a single distinct meaningful element. However, the term word will not be used as a synonym of token, as later will diverge. Similarly to other human readable languages, tokens are separated using spaces:
+
+\begin{lstlisting}
+  token1 token2 token3 token4
+\end{lstlisting}
+
+A token may be formed by multiple words. This is because elements can be named arbitrarily. However this presents the following dilemma, how to distinguish between two tokens and a two-worded token? The answer is that multi worded tokens have a escaped space, this is, the character \textquote{\textbackslash} is used to signal that the following space is not a token separator but a true space. However, this presents a new problem. What if that space is actually a token separator and the previous token ends with a \textquote{\textbackslash} -quite a cumbersome case-. The solution to this problem is that the escape character should be in turn escaped. 
+
+\begin{lstlisting}
+    This has four tokens 
+    This\ is\ a\ single\ token
+    This\ token\ has\ a\ back\\slash
+    This\ token\ ends\ with\ a\ backslash\\ And\ this\ is\ another\ token
+\end{lstlisting}
+
+As a recap, in order to use a space inside a token, a \textquote{\textbackslash\textvisiblespace} is inserted. Analogously, in order to use a backslash inside a token, a \textquote{\textbackslash\textbackslash} is used. This may seem familiar to Unix users, as it is the same strategy implemented on its command prompt.\newline
+
+From a logical perspective, tokens form a decision tree. Its root is on the left and each of the tokens specifies which branch to follow. This means that the correctness of a token and the amount of remaining tokens is dependant on the preceding tokens.\newline
+
+\subsubsection{Acknowledgment}
+If the first character of the first token starts with a \#, it is considered to be an acknowledgment (ACK) identifier (ID). This means that the first token of the response will be this same token. The rest of the operation is the same but one token shifted to the right. Due to this convention, commands must not begin with a \#. 
+
+\begin{lstlisting}
+    +hello (Request, no ACK)
+    -how are you? (Response, no ACK)
+    +#1234 hello (Request, numbered ACK)
+    -#1234 how are you? (Response, numbered ACK)
+    +#multiple\ words\ as\ ACK\ ID hello (Request, arbitrary ACK)
+    -#multiple\ words\ as\ ACK\ ID how are you? (Response, arbitrary ACK)
+\end{lstlisting}
+
+\subsubsection{Request responses}
+Requests can be one of two types: Queries and mutations. The difference is that queries expect an answer back from the mixer. Meanwhile, mutations broadcast themselves to all the clients in case they are successful. In any case, a response will be received from the mixer, indicating if it was successful (OK) or not (FAIL). The ACK will not be sent with the broadcast.
+
+\begin{lstlisting}
+    +light Living\ Room state get (Query)
+    -OK true (Response)
+    +#99 light Living\ Room state get (Query, ACK)
+    -#99 OK true (Response, ACK)
+    +light Living\ Room state set false (Mutation)
+    -light Living\ Room state set false (Mutation broadcast)
+    -OK (Response)
+    +#120 light Living\ Room state set false (Mutation, ACK)
+    -light Living\ Room state set false (Mutation broadcast)
+    -#120 OK (Response, ACK)
+    +light Living\ Room state set apple (Mutation, incorrect, Boolean expected)
+    -FAIL (Response)
+    +#123 light Living\ Room state set apple (Mutation, incorrect, Boolean expected)
+    -#123 FAIL (Response)
+\end{lstlisting}
+
+\subsubsection{Special tokens}
+For any given position there are three reserved tokens: \texttt{help}, \texttt{type} \texttt{name} and \texttt{ping}. The former one lists all the supported values for the proceeding token. \texttt{type} is used to obtain the class of the referred element and \texttt{name} returns its name. The later one is used to check the validity of the preceding tokens and returns \texttt{pong}.
+
+\begin{lstlisting}
+    +Sammy ping (There is no cat named as Sammy)
+    -FAIL
+    +Snow\ Ball ping (Snow Ball is the name of the referred cat)
+    -OK pong
+    +Snow\ Ball type
+    -OK cat
+    +Snow\ Ball name
+    -OK Snow\ Ball
+    +cat Snow\ Ball help
+    -OK help type ping meow purr eat sleep ignore-human
+
+\end{lstlisting}
+
+\subsubsection{Attributes}
+An attribute is a variable which represents the state of a particular feature. Depending on its nature, a particular set of \texttt{set}, \texttt{get}, \texttt{enum}, \texttt{unset}, \texttt{add}, \texttt{rm} and \texttt{config} tokens will be available. 
+
+\begin{itemize}
+    \item \texttt{set}: Modifies the value of the variable. It usually requires a single proceeding token, which is the new value. As it is a mutation, if successful, the mixer will broadcast it with no ACK. It will also send a OK response with the ACK if present.
+    
+    \begin{lstlisting}
+        +day set monday
+        -day set monday
+        -OK
+        +day set july
+        -FAIL
+    \end{lstlisting}
+    
+    \item \texttt{get}: Obtains the value of the variable. It usually requires to be the last token.
+    
+    \begin{lstlisting}
+        +day get
+        -OK monday
+        +day get tuesday
+        -FAIL
+    \end{lstlisting}
+
+    \item \texttt{enum}: Obtains the possible values for this variable. It usually requires to be the last token.
+    
+    \begin{lstlisting}
+        +day enum
+        -OK monday tuesday wednesday thrusday friday saturday sunday
+        +day enum tuesday
+        -FAIL
+    \end{lstlisting}
+    
+    \item \texttt{unset}: Sets a null value for the variable. It usually requires to be the last token. If successful, the mixer will broadcast it with no ACK to all clients. It will also send a OK response with the ACK if present.
+    
+    \begin{lstlisting}
+        +day unset
+        -day unset
+        -OK
+        +day unset tuesday
+        -FAIL
+    \end{lstlisting}
+    
+    \item \texttt{add}: If the options are dynamic, this command is used to add new elements. It is usually followed by the construction arguments.
+    
+    \begin{lstlisting}
+        +day add someday
+        -day add someday
+        -OK
+    \end{lstlisting}
+    
+    \item \texttt{rm}: If the options are dynamic, this command is used to remove a option. It is usually followed by a identifier of the element to remove.
+    
+    \begin{lstlisting}
+        +day rm tuesday
+        -day rm tuesday
+        -OK
+    \end{lstlisting}
+    
+    \item \texttt{config}: It is used to mutate the state of one of the enumerated types.
+    
+    \begin{lstlisting}
+        +day config monday festive set true
+        -day config monday festive set true
+        -OK
+    \end{lstlisting}
+    
+    
+\end{itemize}
+
+\subsubsection{Attribute hierarchy}
+Some attributes may present a hierarchy. This is signaled using \textquote{:}. From the token point of view it will simply be a distinct single token, but it is worth pointing out what is its logical meaning.
+
+\begin{lstlisting}
+    +lamp set on
+    -lamp set on
+    -OK
+    +lamp:color set blue
+    -lamp:color set blue
+    -OK
+    +lamp:color:hue set 50
+    -lamp:color:hue set 50
+    -OK
+    +lamp:strobe set true
+    -lamp:strobe set true
+    -OK
+\end{lstlisting}
+
+\subsubsection{Indices}
+All indices are zero based unless the contrary is specified.
+
+\begin{lstlisting}
+    +floor:count get
+    -OK 10
+    +floor set 0
+    -floor set 0
+    -OK
+    +floor set 10
+    -FAIL
+    
+\end{lstlisting}
+    
+\subsubsection{Data types}
+Some tokens may require to be a particular data type. In such a case, the requirement will be pointed out at this documentation. These are the most used data types:
+
+\begin{itemize}
+    \item \texttt{boolean}: The token must be either \texttt{true} or \texttt{false}.
+    \item \texttt{integer}: The token must be a base-10 number without decimal places (.0 is not allowed). In case it needs to fit into a small bit count it will be mentioned explicitly. Otherwise consider it to be at least 32bits wide.
+    \item \texttt{unsigned integer}: Same as above but negative numbers are not allowed.
+    \item \texttt{number}: Any real number. Dot is used as a decimal separator.
+    \item \texttt{rational}: \texttt{numerator/denominator}, where \texttt{numerator} and \texttt{denominator} are \texttt{integer}s. It does not need to be provided as a reduced fraction, although it will always be returned as such.
+    \item \texttt{resolution}: \texttt{width$\times$height}, where \texttt{width} and \texttt{height} are \texttt{unsigned integer}s
+    \item \texttt{N-vector of type}: A comma separated array of \texttt{N} elements of \texttt{type}. A space after the comma is allowed, but remember that it needs to be escaped in order to be a single token.
+    \item \texttt{quaternion}. Same as a \texttt{4-vector of numbers}. WXYZ ordering.
+    \item \texttt{color}. Same as a \texttt{4-vector of numbers}. Normalized RGBA.
+    \item \texttt{enumerated}: Only one of the values returned by the respective \texttt{enum} command. If the \texttt{enum} command always returns the same values, a hint will be provided.
+    
+\end{itemize}
+
+
+\subsection{Command list}
+
+Once the basic conventions have been introduced, it is time to showcase a list of all the real commands that can be ordered to the mixer.\newline
+
+\subsubsection{Element management}
+
+The mixer can be thought of as a collection of elements that do something with video signals. In order to add a new element to the mixer the \texttt{add} command is used. The first token relates to the type of the element to be added. The possible values will be addressed on its corresponding sections. The next token is the name of the element, which needs to be unique, as it will be used to reference it. Depending on the type of the element, some additional tokens may be required.
+
+\begin{lstlisting}
+    +add <element_type> <element_name> <optional_construction_tokens>
+    -add <element_type> <element_name> <optional_construction_tokens>
+    -OK
+    
+\end{lstlisting}
+
+The \texttt{enum} lists all the added elements, regardless of their type.
+\begin{lstlisting}
+    +enum
+    -OK <element_name0> <element_name1> <element_name2> ...
+    
+\end{lstlisting}
+
+In order to remove a existing element, \texttt{rm} command is used. It is followed by the name of the element to remove.
+
+\begin{lstlisting}
+    +rm <element_name>
+    -rm <element_name>
+    -OK
+    
+\end{lstlisting}
+
+Meanwhile, the \texttt{config} command is used to manage the state of an object. It is followed by the name of the element to configure and the configuration tokens. These last tokens are type dependant, so they will be addressed on the corresponding sections.
+
+\begin{lstlisting}
+    +config <element_name> <configuration_tokens>
+    
+\end{lstlisting}
+
+
+\subsubsection{Signal routing}
+
+Each of the elements that make up the mixer can be chained arbitrarily. Some elements will only offer inputs, some others will only offer outputs and some others may offer both. These I/O ports can be thought of as the physical connectors of a hardware device. An output may feed several inputs but an input can only be fed by a single output. Moreover, it can also be disconnected.\newline
+
+Inputs can be queried with the command \texttt{connection:dst enum} whilst outputs can be gathered with \texttt{connection:src enum}:
+
+\begin{lstlisting}
+    +connection:src enum <element_name>
+    -OK <output_port0> <output_port1> <output_port2> ...
+    
+    +connection:dst enum <element_name>
+    -OK <input_port0> <input_port1> <input_port2> ...
+    
+\end{lstlisting}
+
+In order to route an output to an input the \texttt{connection set} command is used:
+
+\begin{lstlisting}
+    +connection set <dst_element_name> <dst_port> <src_element_name> <src_port>
+    -connection set <dst_element_name> <dst_port> <src_element_name> <src_port>
+    -OK
+    
+\end{lstlisting}
+
+
+To stop feeding an input, \texttt{connection unset} command is used:
+
+\begin{lstlisting}
+    +connection unset <dst_element_name> <dst_port>
+    -connection unset <dst_element_name> <dst_port>
+    -OK
+    
+\end{lstlisting}
+
+Finally, the current connection can be queried with \texttt{connection get}
+
+\begin{lstlisting}
+    +connection get <dst_element_name> <dst_port>
+    -OK <src_element_name> <src_port>
+    -OK (If no feeding signal is set)
+    
+\end{lstlisting}
+
+
+
+\subsubsection{Output window}
+
+
+
+\subsubsection{NDI Input}
+
+
+
+\subsubsection{Media player}
+
+
+
+\subsubsection{Mix effect}
+
+
+\end{document}

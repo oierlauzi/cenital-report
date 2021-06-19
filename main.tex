@@ -1,44 +1,73 @@
 \documentclass{etsist_pfg}
 
-%Paquetes a usar
+%Define the root directory
+\providecommand{\topdir}{.}
+
+%Used packages
 \usepackage[utf8]{inputenc} %UTF-8
-\usepackage[english]{babel} %English
-\usepackage{graphicx} \graphicspath{ {./img/} }%Images
+\usepackage[main=english, spanish]{babel} %English, sometimes Spanish
+\usepackage{graphicx} %Images
+\usepackage{rotating} %Sideways figures
 \usepackage{svg} %SVG images
 \usepackage{pdfpages} %Insert PDFs
 \usepackage{url} %Links
 \usepackage{listings} %Code
 \usepackage{csquotes} %Quotes
-\usepackage{float}
+\usepackage{amsmath} %Math
+\usepackage{siunitx} %Units
+\usepackage{mathabx}
+\usepackage{xfrac}
+\usepackage{float} %Placing
+\usepackage{biblatex} %Bibliography
+\usepackage{subfigure} %Sub-figures
+\usepackage{eurosym} %Euro symbol
 
-%For splitting up in multiple files:
-%Must be last one
-\usepackage{subfiles}
-
-\addbibresource{references.bib}
+%External sources
+\graphicspath{{\topdir/img/}}
+\addglobalbib{\topdir/bib/global.bib}
+\addbibresource{\topdir/bib/02.bib}
+\addbibresource{\topdir/bib/A01.bib}
 
 %Metadata
 \title{Design and implementation of a software-based vision mixer}
 \author{Oier Lauzirika Zarrabeitia}
-\date{\today}
+\date{28/06/2021} %TODO
+
+%Acronyms
+\makeglossaries
+\loadglsentries{tex/Acronyms}
+
+%Euro symbol
+\DeclareSIUnit{\EUR}{\text{\euro}}
+
+%For splitting up in multiple files:
+%Must be last thing in the preamble
+\usepackage{subfiles}
 
 \begin{document}
 %\maketitle %We'll make use of Primera Hoja.pdf
 \includepdf{misc/Primera Hoja.pdf}
 
-%Hoja en blanco
-\newpage
+%White page (back side of the front-page)
+\thispagestyle{empty}\clearpage\null\newpage
+
+%Comentario
 \thispagestyle{empty}
-\
+\vspace*{\fill}
+\begin{flushright}
+Los ingenieros inventamos la televisión. \\
+De la invención de la \textit{caja tonta} se encargaron otros.
+\end{flushright}
+\vspace*{\fill}
 \newpage
 
 %Resumen and abstract
-\renewcommand{\abstractname}{Resumen}
+\begin{otherlanguage}{spanish}
 \begin{abstract}
     \subfile{tex/Resumen}
 \end{abstract}
+\end{otherlanguage}
 
-\renewcommand{\abstractname}{Abstract}
 \begin{abstract}
     \subfile{tex/Abstract}
 \end{abstract}
@@ -50,8 +79,8 @@
 
 \listoftables
 
-\unnumberedchapter{Preámbulo}
-\subfile{tex/Preambulo}
+%Acronyms
+\printglossary[type=\acronymtype]
 
 %Contents
 \chapter{Introduction}
@@ -60,8 +89,8 @@
 \chapter{State of the art}
 \subfile{tex/02-State of the art}
 
-\chapter{Involved technology}
-\subfile{tex/03-Involved technology}
+\chapter{Specifications}
+\subfile{tex/03-Specifications}
 
 \chapter{Description}
 \subfile{tex/04-Description}
@@ -72,18 +101,43 @@
 \chapter{Budget}
 \subfile{tex/06-Budget}
 
+\chapter{Future development}
+\subfile{tex/07-Future development}
+
 \chapter{Conclusions}
-\subfile{tex/07-Conclusions}
+\subfile{tex/08-Conclusions}
 
 %Bibliography
 \printbibliography
 
 %Apendcies
 \begin{appendices}
-\chapter{Signed distance fields and its applications in computer graphics}
-\subfile{tex/A01-Signed distance fields and its applications in computer graphics}
+\begin{refsection}
+\chapter{GPU based Bézier contour rasterization}
+\subfile{tex/A01-GPU based Bezier contour rasterization}
+\end{refsection}
+
+\chapter{Control panel prototype}
+\subfile{tex/A02-Control panel prototype}
+
+\chapter{Manual}
+\section{Introduction}
+\subfile{tex/A03.1-Introduction}
+\section{Installation}
+\subfile{tex/A03.2-Installation}
+\section{Execution}
+\subfile{tex/A03.3-Execution}
+\section{Command reference}
+\subfile{tex/A03.4-Command reference}
+
+\chapter{Web Control Manual}
+\section{Introduction}
+\subfile{tex/A04.1-Introduction}
+\section{Conventions}
+\subfile{tex/A04.2-Installation}
+\section{Command reference}
+\subfile{tex/A04.3-Usage}
 
 \end{appendices}
-
 
 \end{document}
