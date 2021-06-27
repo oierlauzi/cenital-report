@@ -6,7 +6,7 @@
 
 \begin{document}
 \section{Introduction}
-Bézier curves are a type of parametric curves invented by Pierre Bézier in the 1960s. They are widely used in graphic design software and \gls{cad} tools, as they provide an intuitive control over the shape of the curve. This intuitiveness is achieved using control points, which in colloquial terms, attract the curve towards them. The number of control points that are used define the degree of the curve \cite{pomax:bezier}. Nowadays, most programs use cubic Bézier curves, which are defined by 2 control points plus the two extreme points, as shown in the figure \ref{fig:cubic}.\newline
+Bézier curves are a type of parametric curves invented by Pierre Bézier in the 1960s. They are widely used in graphic design software and \gls{cad} tools, as they provide an intuitive control over the shape of the curve. This intuitiveness is achieved using control points, which in colloquial terms, attract the curve towards them. The number of control points that are used define the degree of the curve\cite{pomax:bezier}. Nowadays, most programs use cubic Bézier curves, which are defined by 2 control points plus the two extreme points, as shown in the figure \ref{fig:cubic}.\newline
 
 \begin{figure}[hbtp]
     \centering
@@ -22,7 +22,7 @@ Some of them rely on segmenting the curves in very short lines, so that it appea
 
 Some other approaches are based on uploading the contour data to the \gls{gpu} and processing it in a fancy fragment shader. They usually feature a \gls{sdf} based anti-aliasing mechanism, so the edges appear to be smooth. However, for the sake of optimization, they might not obtain pixel-perfect results, while having a very heavy impact on the performance, as the curves need to be processed once per frame. This may make them a good candidate for mutating curves, but do not suit more static scenarios.\newline
 
-Here is where Loop-Blinn's solution comes into place. This solution consists of describing the Bézier curve as a set of implicit curve equations and assigning its value to each of the rendered pixels \cite{loopblinn2005}. This approach is highly efficient due to its linearity, although it requires a bit of \textit{number crunching} in the \gls{cpu}.\newline %TODO explain better
+Here is where Loop-Blinn's solution comes into place. This solution consists in describing the Bézier curve as a set of implicit curve equations and assigning its value to each of the rendered pixels\cite{loopblinn2005}. This approach is highly efficient due to its linearity, although it requires a bit of preliminary \textit{number crunching} in the \gls{cpu}.\newline %TODO explain better
 
 This last approach has been chosen to crop video frames with an arbitrary shape. In particular, cubic curves will be used, as they have become an industry standard.
 
@@ -36,7 +36,7 @@ The analytical form of the Bézier curves is based on polynomials of arbitrary d
 where $b_{N,i}$ is the $N$-th degree Bernstein basis polynomial's $i$-th term, which is defined as \eqref{eq:bernstein}.\newline
 
 \begin{equation} \label{eq:bernstein}
-    b_{N,i}(t) = {N \choose i} (1-t)^{N-i} t^i \qquad t \in [0, 1]
+    b_{N,i}(t) = \binom{N}{i} (1-t)^{N-i} t^i \qquad t \in [0, 1]
 \end{equation}
 
 \begin{equation} \label{eq:bezier3}

@@ -2,9 +2,29 @@
 \documentclass[../main.tex]{subfiles}
 
 %External sources
-\graphicspath{{\topdir/img/02/}}
+\graphicspath{{\topdir/img/03/}}
 
 \begin{document}
-Lorem ipsum
+This project will attempt to implement a software-based vision mixer which receives live video feeds through the \gls{ndi} protocol described in the previous chapter.\newline
+
+
+
+For the sake of obtaining colorimetrically correct results, it will support the following colorimetry standards and \glspl{eotf}:
+\begin{itemize}
+    \item ITU-R BT.601-7\cite{bt601}
+    \item ITU-R BT.709-6\cite{bt709}
+    \item ITU-R BT.2020-2\cite{bt2020}
+    \item SMPTE 240M\cite{smpte240M}
+    \item SMPTE 431 (Display-P3)\cite{smpte431}
+    \item SMPTE 432 (DCI-P3)\cite{smpte432}
+    \item SMPTE ST.2084 (PQ)\cite{smpte2084}
+    \item ARIB STD-B67 (HLG)\cite{aribStdB67}
+    \item IEC61966-2-1 (sRGB)
+    \item IEC61966-2-4 (sYCC)
+    \item Adobe RGB
+    
+\end{itemize}
+
+\printbibliography
 
 \end{document}
