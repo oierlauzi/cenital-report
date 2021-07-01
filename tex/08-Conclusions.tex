@@ -1,9 +1,19 @@
 \providecommand{\topdir}{..}
 \documentclass[../main.tex]{subfiles}
 
-%External sources
-\graphicspath{{\topdir/img/02/}}
-
 \begin{document}
-Lorem ipsum
+\label{chap:conclusions}
+Despite the proliferation of many video-on-demand streaming services, live video remains unbeatable for many applications. Therefore, as long as the linear \gls{tv} continues to exist, so will the vision mixers, regardless of their nature. This does not mean that there is no room for innovation on these systems, as they have to keep adapting to new multimedia trends.\newline
+
+In this project, a usable software-based vision mixer has been implemented. This mixer makes efficient use of the available hardware resources and allows to perform relatively complex compositions on modest hardware. Moreover, all operations are performed with colour accuracy in mind, as it implements all widespread industry-standards.\newline
+
+Compared to the rest of commercial mixers, it introduces the ability to use arbitrary Bézier contours to mask parts of a keyer. This is useful to trash undesired parts of an image when performing a chroma key. In addition, it can be used for more creative applications. The major limitation of this mixer is the lack of available \gls{io}, as it only supports \gls{ndi} inputs and window outputs. However, the architecture allows easy expansion, so this problem can be addressed in the future.\newline 
+
+Considering that it has proven to be relatively reliable, it could be used in some select production environments, as long as more extensive stability testings are carried out. Additionally, it could be used for educational purposes, as it allows to have one mixer per student.\newline
+
+
+
+%Print bibliography if it is being compiled standalone
+%\printbibliography
+
 \end{document}

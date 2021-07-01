@@ -5,11 +5,20 @@
 \graphicspath{{\topdir/img/03/}}
 
 \begin{document}
-This project will attempt to implement a software-based vision mixer which receives live video feeds through the \gls{ndi} protocol described in the previous chapter.\newline
+\label{chap:spec}
+
+This project will attempt to implement a software-based vision mixer which receives live video feeds through the \gls{ndi} protocol described in the previous chapter. It will also have the capability of playing pre-recorded video clips and images. The processed images will be extracted from the mixer using the integrated video ports of the host computer.\newline
+
+All image processing will have to be performed hardware-accelerated with \glspl{gpu} to obtain the maximum performance. If possible, video decoding will be hardware-accelerated as well.\newline
+
+Similarly to other software-based vision mixers, it will have to be as flexible as possible, allowing multi-M/E configurations with an arbitrary number of keyers. These keyers will be configurable as a combination of linear, luma, chroma or pattern keys. As opposed to all mixers on the market, the pattern will not be a preset. It will be user-definable by parametric vector-graphics instead. 3D \gls{dve} effects will also be available. All aforementioned effects may be simultaneously applied on the same keyer.\newline
 
 
+
+The mixer will have to be able to work with arbitrary configurations, such as nonstandard resolutions and framerates. Moreover, the configuration across \gls{me} banks may be heterogeneous.\newline
 
 For the sake of obtaining colorimetrically correct results, it will support the following colorimetry standards and \glspl{eotf}:
+
 \begin{itemize}
     \item ITU-R BT.601-7\cite{bt601}
     \item ITU-R BT.709-6\cite{bt709}
@@ -19,12 +28,17 @@ For the sake of obtaining colorimetrically correct results, it will support the 
     \item SMPTE 432 (DCI-P3)\cite{smpte432}
     \item SMPTE ST.2084 (PQ)\cite{smpte2084}
     \item ARIB STD-B67 (HLG)\cite{aribStdB67}
-    \item IEC61966-2-1 (sRGB)
-    \item IEC61966-2-4 (sYCC)
+    \item IEC61966-2-1 (sRGB)\cite{iec61966-2-1}
+    \item IEC61966-2-4 (xvYCC)\cite{iec61966-2-4}
     \item Adobe RGB
     
 \end{itemize}
 
-\printbibliography
+Architecturally, the mixer will be engineered to follow the server-client pattern. The server will have the duty of ingesting, processing and outputting video, while the client(s) will be the front-end commanding to the server changes in the configuration. In case there are multiple clients connected to the same server, the server will also be responsible for synchronizing the state across all clients. Client-server communications will be performed using a purpose-built \gls{cli} over \gls{tcp} or Web-Sockets.\newline
+
+Clients will serve as the user interface of this software. The server is agnostic of this interface, so multiple variants of the client may be implemented. In this project, the primary focus will be on developing a web application which allows to configure most aspects of the server. However, a hardware prototype of a control panel will be considered as well.\newline
+
+%Print bibliography if it is being compiled standalone
+%\printbibliography
 
 \end{document}

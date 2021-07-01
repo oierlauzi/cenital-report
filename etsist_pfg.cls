@@ -23,9 +23,9 @@
    a4paper,
    twoside,
    inner=2cm, %Como maximo 2cm
-   outer=3cm, %Como maximo 4cm
-   top=2cm,
-   bottom=2cm
+   outer=2.5cm, %Como maximo 4cm
+   top=2.5cm,
+   bottom=2.5cm
 ]{geometry}
 
 %Citas estilo IEEE

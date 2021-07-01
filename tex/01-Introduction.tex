@@ -5,8 +5,17 @@
 \graphicspath{{\topdir/img/02/}}
 
 \begin{document}
+\label{chap:intro}
 
-The vision mixer is the central element in a live \gls{tv} production facility. Its purpose is to switch among all the available video sources, such as cameras, media players, \glspl{cg}, etc. Therefore, it needs to operate in real-time, this is, it must be able to handle all the data on its inputs in a reasonable and invariant amount of time. Historically they have been discrete systems with highly specialized hardware, but advancements in computer technologies have led to the possibility of emulating them using software.\newline
+Vision mixers are a central element in a live \gls{tv} production facility. Their purpose is to switch and compose among all the available video sources, such as cameras, media players, \glspl{cg}, etc\dots Therefore, they need to operate in real-time, this is, they must be able to handle the data on their inputs in a reasonable and invariant amount of time. Historically, they have been discrete systems with highly specialized hardware, but advancements in computer technology have led to the possibility of emulating them using software.\newline
 
+This project consists in implementing a software-defined vision mixer that can be run on any modern computer. The primary advantage of software-based solutions is that they are much cheaper to operate, as broadcast-grade equipment is costly. Therefore, software-based solutions enable small groups of people to produce live video broadcasts with a reduced budget. This has been important in the recent pandemic situation, as many artists could not perform in front of an audience, so streaming their work was their only option to make a living. Other potential scopes of use involve the educational environment, as each of the students can be provided with its own vision mixer. \newline
+
+This report firstly describes in \autoref{chap:soa} the history and operating principles of modern vision mixers. Moreover, this chapter also addresses the existing software-based solutions and introduces the \gls{ip}-based production. The next chapter (\autoref{chap:spec}) describes the specifications of the implemented mixer. Here, the international colorimetry standards covered by this mixer will be enumerated. Then, in the \autoref{chap:desc}, the implementation details and general architecture of the software are deeply described. However, some ancillary implementation details are left for the appendices \ref{chap:bezier} and \ref{chap:control}. Finally the \autoref{chap:results} discusses the results obtained for this project. Moreover, it serves as a guide to properly scale computer hardware to obtain the desired results at the lowest possible cost.\newline
+
+
+
+%Print bibliography if it is being compiled standalone
+%\printbibliography
 
 \end{document}
