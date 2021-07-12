@@ -2,4 +2,83 @@
 
 \begin{document}
 
+This software can be installed in two ways: Release and development. The first manner is advised for normal use. The second one should only be used when adding new features to the source code.\newline
+
+\subsection{Release installation}
+
+The first step is to install all the dependencies. On Debian based systems this can be done using the following command:
+
+\begin{lstlisting}[language=bash]
+    sudo apt install\
+    libvulkan1 vulkan-validationlayers\
+    libglfw3\
+    libavutil56 libavformat58 libavcodec58 libswscale5
+\end{lstlisting}
+
+Copy all the shared libraries to the \texttt{/usr/local/lib/} directory and update registries:
+
+\begin{lstlisting}[language=bash]
+    sudo cp /path/to/provided/files/lib/* /usr/local/lib/
+    sudo ldconfig
+\end{lstlisting}
+
+Copy the executable to the \texttt{/usr/local/bin/} directory:
+
+\begin{lstlisting}[language=bash]
+    sudo cp /path/to/provided/files/bin/cenital /usr/local/bin/
+\end{lstlisting}
+
+
+\subsection{Development installation}
+
+Firstly, install all the development tools required to build the binaries. In this example, the GNU C compiler (GCC) is used, but the reader may choose an alternative compiler such as Clang.\newline
+
+\begin{lstlisting}[language=bash]
+    sudo apt install g++ cmake
+\end{lstlisting}
+
+Then install all the dependencies using the following command:
+
+\begin{lstlisting}[language=bash]
+    sudo apt install\
+    libvulkan-dev vulkan-validationlayers-dev glslang-dev\
+    libglfw3-dev\
+    libavutil-dev libavformat-dev libavcodec-dev libswscale-dev
+\end{lstlisting}
+
+Now proceed to build and install all the \textit{Zuazo} modules. This can be automated using the following script:
+
+\begin{lstlisting}[language=bash]
+    cd /path/to/provided/files/src
+    for d in zuazo*/; do
+        cd $d
+        mkdir build
+        cd build
+        cmake ../
+        make -j16
+        sudo make install
+        cd ../..
+    done
+\end{lstlisting}
+
+When a line of code inside one of these libraries is changed, it needs to be rebuilt using the following commands. Moreover, if a file is added or deleted, \texttt{cmake ../} must be executed after \texttt{cd}.\newline
+
+\begin{lstlisting}[language=bash]
+    cd /path/to/provided/files/src/module/build
+    make -j16
+    sudo make install
+\end{lstlisting}
+
+Finally, build \textit{Cenital} itself:
+
+\begin{lstlisting}[language=bash]
+    cd /path/to/provided/files/src/cenital
+    mkdir build
+    cd build
+    cmake ../
+    make -j16
+    sudo make install
+\end{lstlisting}
+
+
 \end{document}

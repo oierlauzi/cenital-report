@@ -2,32 +2,32 @@
 
 \begin{document}
 
-Cenital mixer exposes a command line interface (CLI) which allows performing any supported action. Currently this is the only way of controlling the mixer. This CLI has been implemented considering a multi-client architecture, this is, all the modifications performed by a client are broadcasted to the others, so that they can keep track of the state of the machine. The purpose of this section is to be a reference cheat-sheet for either manually setting up the mixer or developing applications that interact with it.\newline
+The \textit{Cenital} mixer exposes a command line interface (CLI) which allows performing any supported action. Currently, this is the only way of controlling the mixer. This CLI has been implemented considering a multi-client architecture, this is, all the modifications performed by a client are broadcasted to the others, so that they can keep track of the state of the machine. The purpose of this section is to be a reference cheat-sheet for either manually setting up the mixer or developing applications that interact with it.\newline
 
 As mentioned earlier, currently this CLI is the only way to control the mixer. However, it is exposed using two different protocols. One of them is Web Sockets, which is a thin layer on top of HTTP that allows interaction with web applications. See Mozilla's documentation\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API}} for further references. A possible implementation in JavaScript is provided with the Web Control application's source code.\newline
 
-The other protocol is plain TCP, which pretends to be used by the rest of the applications and human managers. For developing applications that use it, please, refer to the chosen language's specific TCP socket library. For instance, for C++, Boost's ASIO is a good starting point. The simplest way for a human to connect to the mixer from a Unix machine is using the \texttt{nc} command:
+The other protocol is plain TCP, which pretends to be used by the rest of the applications and human managers. For developing applications that use it, refer to the chosen language's specific TCP socket library. For instance, for C++, Boost's ASIO is a good starting point. The simplest way for a human to connect to the mixer from a Unix machine is using the \texttt{nc} command:
 
 \begin{lstlisting}[language=bash]
   $ nc <address> <port>
 \end{lstlisting}
 
-This will allow typing the commands referenced on this document and sending them to the mixer in order to perform manual changes. All the responses and state updates will also be displayed here.
+This will allow typing the commands referenced in this document and sending them to the mixer to perform manual changes. All the responses and state updates will also be displayed here.
 
 \subsection{Conventions}
 
-The commands described in this section follow some conventions. Therefore, in order to avoid repetitive explanations of these conventions, they will be explained once for all. The commands used here are pet examples and do not represent the real operation of the mixer, they just highlight a particular usage of the syntax. In all examples, a \textquote{+} at the beginning is to indicate that the message was sent to the mixer whilst a \textquote{-} signals that the message was received from the mixer.\newline
+The commands described in this section follow some conventions. Therefore, to avoid repetitive explanations of these conventions, they will be explained once for all. The commands used here are pet examples and do not represent the real operation of the mixer, they just highlight a particular usage of the syntax. In all examples, a \textquote{+} at the beginning is to indicate that the message was sent to the mixer whilst a \textquote{-} signals that the message was received from the mixer.\newline
 
 This CLI is case sensitive. This means that the user must pay attention to the casing of the words. All commands are \textit{kebab-case}, but a client may decide to name elements with any casing. In addition, enumerations have all their letters \textit{camelCase}. Non ASCII characters such as tildes and \textquote{ñ}s have not been extensively tested. Avoid using them for increased stability.\newline
 
 \subsubsection{Token separation}
-A command can be considered as a collection of tokens. A token can be thought of as a word, this is, a single distinct meaningful element. However, the term word will not be used as a synonym of token, as later will diverge. Similarly to other human readable languages, tokens are separated using spaces:
+A command can be considered as a collection of tokens. A token can be thought of as a word, this is, a single distinct meaningful element. However, the term word will not be used as a synonym of token, as later their meanings will diverge. Similarly to other human readable languages, tokens are separated using spaces:
 
 \begin{lstlisting}
   token1 token2 token3 token4
 \end{lstlisting}
 
-A token may be formed by multiple words. This is because elements can be named arbitrarily. However this presents the following dilemma, how to distinguish between two tokens and a two-worded token? The answer is that multi worded tokens have a escaped space, this is, the character \textquote{\textbackslash} is used to signal that the following space is not a token separator but a true space. However, this presents a new problem. What if that space is actually a token separator and the previous token ends with a \textquote{\textbackslash} -quite a cumbersome case-. The solution to this problem is that the escape character should be in turn escaped. 
+A token may be formed by multiple words. This is because the elements can be named arbitrarily. However, this presents the following dilemma, how to distinguish between two tokens and a two-worded token? The answer is that multi-worded tokens have an escaped space, this is, the character \textquote{\textbackslash} is used to signal that the following space is not a token separator but a true space. However, this presents a new problem. What if that space is actually a token separator and the previous token ends with a \textquote{\textbackslash} -quite a cumbersome case-. The solution to this problem is that the escape character should be in turn escaped. 
 
 \begin{lstlisting}
     This has four tokens 
@@ -36,44 +36,44 @@ A token may be formed by multiple words. This is because elements can be named a
     This\ token\ ends\ with\ a\ backslash\\ And\ this\ is\ another\ token
 \end{lstlisting}
 
-As a recap, in order to use a space inside a token, a \textquote{\textbackslash\textvisiblespace} is inserted. Analogously, in order to use a backslash inside a token, a \textquote{\textbackslash\textbackslash} is used. This may seem familiar to Unix users, as it is the same strategy implemented on its command prompt.\newline
+As a recap, to use a space inside a token, a \textquote{\textbackslash\textvisiblespace} is inserted. Analogously, to use a backslash inside a token, a \textquote{\textbackslash\textbackslash} is used. This may seem familiar to Unix users, as it is the same strategy implemented on its command prompt.\newline
 
-From a logical perspective, tokens form a decision tree. Its root is on the left and each of the tokens specifies which branch to follow. This means that the correctness of a token and the amount of remaining tokens is dependant on the preceding tokens.\newline
+From a logical perspective, tokens form a decision tree. Its root is on the left and each of the tokens specifies which branch to follow. This means that the correctness of a token and the number of remaining tokens is dependant on the preceding tokens.\newline
 
 \subsubsection{Acknowledgment}
 If the first character of the first token starts with a \#, it is considered to be an acknowledgment (ACK) identifier (ID). This means that the first token of the response will be this same token. The rest of the operation is the same but one token shifted to the right. Due to this convention, commands must not begin with a \#. 
 
 \begin{lstlisting}
-    +hello (Request, no ACK)
-    -how are you? (Response, no ACK)
-    +#1234 hello (Request, numbered ACK)
-    -#1234 how are you? (Response, numbered ACK)
-    +#multiple\ words\ as\ ACK\ ID hello (Request, arbitrary ACK)
-    -#multiple\ words\ as\ ACK\ ID how are you? (Response, arbitrary ACK)
+    +hello
+    -how are you?
+    +#1234 hello
+    -#1234 how are you?
+    +#multiple\ words\ as\ ACK\ ID hello
+    -#multiple\ words\ as\ ACK\ ID how are you?
 \end{lstlisting}
 
 \subsubsection{Request responses}
-Requests can be one of two types: Queries and mutations. The difference is that queries expect an answer back from the mixer. Meanwhile, mutations broadcast themselves to all the clients in case they are successful. In any case, a response will be received from the mixer, indicating if it was successful (OK) or not (FAIL). The ACK will not be sent with the broadcast.
+Requests can be one of two types: Queries and mutations. The difference is that the queries expect an answer back from the mixer. Meanwhile, the mutations broadcast themselves to all the clients in case they are successful. In any case, a response will be received from the mixer, indicating if it was successful (OK) or not (FAIL). The ACK will not be sent with the broadcast.
 
 \begin{lstlisting}
-    +light Living\ Room state get (Query)
-    -OK true (Response)
-    +#99 light Living\ Room state get (Query, ACK)
-    -#99 OK true (Response, ACK)
-    +light Living\ Room state set false (Mutation)
-    -light Living\ Room state set false (Mutation broadcast)
-    -OK (Response)
-    +#120 light Living\ Room state set false (Mutation, ACK)
-    -light Living\ Room state set false (Mutation broadcast)
-    -#120 OK (Response, ACK)
-    +light Living\ Room state set apple (Mutation, incorrect, Boolean expected)
-    -FAIL (Response)
-    +#123 light Living\ Room state set apple (Mutation, incorrect, Boolean expected)
-    -#123 FAIL (Response)
+    +light Living\ Room state get
+    -OK true
+    +#99 light Living\ Room state get
+    -#99 OK true
+    +light Living\ Room state set false
+    -light Living\ Room state set false
+    -OK
+    +#120 light Living\ Room state set false
+    -light Living\ Room state set false
+    -#120 OK
+    +light Living\ Room state set apple
+    -FAIL
+    +#123 light Living\ Room state set apple
+    -#123 FAIL
 \end{lstlisting}
 
 \subsubsection{Special tokens}
-For any given position there are three reserved tokens: \texttt{help}, \texttt{type} \texttt{name} and \texttt{ping}. The former one lists all the supported values for the proceeding token. \texttt{type} is used to obtain the class of the referred element and \texttt{name} returns its name. The later one is used to check the validity of the preceding tokens and returns \texttt{pong}.
+For any given position, there are three reserved tokens: \texttt{help}, \texttt{type} \texttt{name} and \texttt{ping}. The former one lists all the supported values for the proceeding token. \texttt{type} is used to obtain the class of the referred element and \texttt{name} returns its name. The later one is used to check the validity of the preceding tokens and returns \texttt{pong}.
 
 \begin{lstlisting}
     +Sammy ping (There is no cat named as Sammy)
@@ -139,7 +139,7 @@ An attribute is a variable which represents the state of a particular feature. D
         -OK
     \end{lstlisting}
     
-    \item \texttt{rm}: If the options are dynamic, this command is used to remove a option. It is usually followed by a identifier of the element to remove.
+    \item \texttt{rm}: If the options are dynamic, this command is used to remove an option. It is usually followed by an identifier of the element to remove.
     
     \begin{lstlisting}
         +day rm tuesday
@@ -159,7 +159,7 @@ An attribute is a variable which represents the state of a particular feature. D
 \end{itemize}
 
 \subsubsection{Attribute hierarchy}
-Some attributes may present a hierarchy. This is signaled using \textquote{:}. From the token point of view it will simply be a distinct single token, but it is worth pointing out what is its logical meaning.
+Some attributes may present a hierarchy. This is signaled using \textquote{:}. From the token point of view, it will simply be a distinct single token, but it is worth pointing out what is its logical meaning.
 
 \begin{lstlisting}
     +lamp set on
@@ -191,16 +191,17 @@ All indices are zero based unless the contrary is specified.
 \end{lstlisting}
     
 \subsubsection{Data types}
-Some tokens may require to be a particular data type. In such a case, the requirement will be pointed out at this documentation. These are the most used data types:
+Some tokens may require to be a particular data type. In such a case, the requirement will be pointed out in this documentation. These are the most used data types:
 
 \begin{itemize}
     \item \texttt{boolean}: The token must be either \texttt{true} or \texttt{false}.
-    \item \texttt{integer}: The token must be a base-10 number without decimal places (.0 is not allowed). In case it needs to fit into a small bit count it will be mentioned explicitly. Otherwise consider it to be at least 32bits wide.
+    \item \texttt{integer}: The token must be a base-10 number without decimal places (.0 is not allowed). In case it needs to fit into a small bit count, it will be mentioned explicitly. Otherwise, consider it to be at least 32bits wide.
     \item \texttt{unsigned integer}: Same as above but negative numbers are not allowed.
     \item \texttt{number}: Any real number. Dot is used as a decimal separator.
+    \item \texttt{duration}: Any duration in seconds (must end with \textquote{s})
     \item \texttt{rational}: \texttt{numerator/denominator}, where \texttt{numerator} and \texttt{denominator} are \texttt{integer}s. It does not need to be provided as a reduced fraction, although it will always be returned as such.
     \item \texttt{resolution}: \texttt{width$\times$height}, where \texttt{width} and \texttt{height} are \texttt{unsigned integer}s
-    \item \texttt{N-vector of type}: A comma separated array of \texttt{N} elements of \texttt{type}. A space after the comma is allowed, but remember that it needs to be escaped in order to be a single token.
+    \item \texttt{N-vector of type}: A comma separated array of \texttt{N} elements of \texttt{type}. A space after the comma is allowed, but remember that it needs to be escaped to be a single token.
     \item \texttt{quaternion}. Same as a \texttt{4-vector of numbers}. WXYZ ordering.
     \item \texttt{color}. Same as a \texttt{4-vector of numbers}. Normalized RGBA.
     \item \texttt{enumerated}: Only one of the values returned by the respective \texttt{enum} command. If the \texttt{enum} command always returns the same values, a hint will be provided.
@@ -214,7 +215,7 @@ Once the basic conventions have been introduced, it is time to showcase a list o
 
 \subsubsection{Element management}
 
-The mixer can be thought of as a collection of elements that do something with video signals. In order to add a new element to the mixer the \texttt{add} command is used. The first token relates to the type of the element to be added. The possible values will be addressed on its corresponding sections. The next token is the name of the element, which needs to be unique, as it will be used to reference it. Depending on the type of the element, some additional tokens may be required.
+The mixer can be thought of as a collection of elements that do something with video signals. To add a new element to the mixer the \texttt{add} command is used. The first token relates to the type of the element to be added. The possible values will be addressed in its corresponding sections. The next token is the name of the element, which needs to be unique, as it will be used to reference it. Depending on the type of the element, some additional tokens may be required. The keywords for each element type are shown in the table \ref{tab:type_keywords}
 
 \begin{lstlisting}
     +add <element_type> <element_name> <optional_construction_tokens>
@@ -223,6 +224,21 @@ The mixer can be thought of as a collection of elements that do something with v
     
 \end{lstlisting}
 
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{|c|c|}
+        \hline
+        Type & Keyword \\\hline
+        Output window & output-window \\\hline
+        NDI Input & input-ndi \\\hline
+        Media player & input-media-player \\\hline
+        Mix effect & mix-effect \\\hline
+    \end{tabular}
+    \caption{Keywords for element types}
+    \label{tab:type_keywords}
+\end{table}
+
+
 The \texttt{enum} lists all the added elements, regardless of their type.
 \begin{lstlisting}
     +enum
@@ -230,7 +246,7 @@ The \texttt{enum} lists all the added elements, regardless of their type.
     
 \end{lstlisting}
 
-In order to remove a existing element, \texttt{rm} command is used. It is followed by the name of the element to remove.
+To remove an existing element, \texttt{rm} command is used. It is followed by the name of the element to remove.
 
 \begin{lstlisting}
     +rm <element_name>
@@ -239,7 +255,7 @@ In order to remove a existing element, \texttt{rm} command is used. It is follow
     
 \end{lstlisting}
 
-Meanwhile, the \texttt{config} command is used to manage the state of an object. It is followed by the name of the element to configure and the configuration tokens. These last tokens are type dependant, so they will be addressed on the corresponding sections.
+Meanwhile, the \texttt{config} command is used to manage the state of an object. It is followed by the name of the element to configure and the configuration tokens. These last tokens are type dependant, so they will be addressed in the corresponding sections.
 
 \begin{lstlisting}
     +config <element_name> <configuration_tokens>
@@ -249,7 +265,7 @@ Meanwhile, the \texttt{config} command is used to manage the state of an object.
 
 \subsubsection{Signal routing}
 
-Each of the elements that make up the mixer can be chained arbitrarily. Some elements will only offer inputs, some others will only offer outputs and some others may offer both. These I/O ports can be thought of as the physical connectors of a hardware device. An output may feed several inputs but an input can only be fed by a single output. Moreover, it can also be disconnected.\newline
+Each of the elements that constitute the mixer can be chained arbitrarily. Some elements will only offer inputs, some others will only offer outputs and some others may offer both. These I/O ports can be thought of as the physical connectors of a hardware device. An output may feed several inputs but an input can only be fed by a single output. Moreover, it can also be disconnected.\newline
 
 Inputs can be queried with the command \texttt{connection:dst enum} whilst outputs can be gathered with \texttt{connection:src enum}:
 
@@ -262,7 +278,7 @@ Inputs can be queried with the command \texttt{connection:dst enum} whilst outpu
     
 \end{lstlisting}
 
-In order to route an output to an input the \texttt{connection set} command is used:
+To route an output to an input the \texttt{connection set} command is used:
 
 \begin{lstlisting}
     +connection set <dst_element_name> <dst_port> <src_element_name> <src_port>
@@ -292,19 +308,156 @@ Finally, the current connection can be queried with \texttt{connection get}
 
 
 
-\subsubsection{Output window}
-
-
-
 \subsubsection{NDI Input}
 
+NDI inputs are used to listen to a remote NDI source and present it as a normal input to the rest of elements. The only configuration allowed is the NDI device to listen to. Moreover, video parameters can be queried, as illustrated by the table \ref{tab:ndi_input_commands}. Naturally, all these commands are preceded by \texttt{config <ndi\_input\_name>}.\newline
 
 
-\subsubsection{Media player}
+
+\subsubsection{Output window}
+
+Output windows are the only way of outputting video from the mixer. However, they offer great flexibility so that they can be used in many circumstances. The commands offered for configuring them are shown in the table \ref{tab:window_output_commands}. Clearly, those commands are preceded by \texttt{config <output\_window\_name>}.\newline
 
 
 
 \subsubsection{Mix effect}
 
+Mix effects are used to manipulate video signals inside the mixer. The available commands are enumerated in the table \ref{tab:mix_effect_commands}. Similarly to other elements, all these commands are preceded by \texttt{config <mix\_effect\_name>}. In this table, the keyer configuration has been obviated. This is because the upstream and downstream keyers are configured equally using the commands \texttt{config <mix\_effect\_name> us-overlay config <index>} and \texttt{config <mix\_effect\_name> ds-overlay config <index>} respectively. The particular configuration commands of the keyers are displayed in the table \ref{tab:keyer_commands}.
+
+
+
+
+\begin{landscape}
+\begin{longtable}{|l|c|c|p{12cm}|}
+    \hline
+    Attribute/Command & Type & Attribute commands & Desription \\\hline
+    
+    source & enumerated & get & Remote NDI device used as a source. \\\hline
+    
+    video-mode:frame-rate & rational & get & Frame rate in frames per second. \\\hline
+    video-mode:pixel-aspect-ratio & rational & get & Ratio between the physical width and height of pixels. \\\hline
+    video-mode:resolution & resolution & get & Size of the resulting frames in pixels. \\\hline
+    video-mode:color-primaries & enumerated & get & Color primaries used when compositing. Currently ignored. \\\hline
+    video-mode:color-model & enumerated & get & Color model of the frames. \\\hline
+    video-mode:color-transfer-function & enumerated & get & Gamma correction standard of the frames. \\\hline
+    video-mode:color-subsampling & enumerated & get & Subsampling scheme of the resulting frame. \\\hline
+    video-mode:color-range & enumerated & get & Range encompassed by component values. \\\hline
+    video-mode:color-format & enumerated & get & Pixel storage format. It defines the color depth. \\\hline
+    
+    
+    \caption{NDI input commands}
+    \label{tab:ndi_input_commands}
+\end{longtable}
+
+\begin{longtable}{|l|c|c|p{10cm}|}
+    \hline
+    Attribute/Command & Type & Attribute commands & Desription \\\hline
+    
+    video-scaling:filter & enumerated & get/set/enum & Filter used to scale the frames. Possible values: nearest, linear and cubic. \\\hline
+    video-scaling:mode & enumerated & get/set/enum & Adjusting done on the frame when scaling. Possible values: stretch, box, crop, clampVertically and clampHorizontally. \\\hline
+    
+    position & 2-vector of integers & get/set & Size of the monitor in screen coordinates (may not equal pixels). \\\hline
+    size & 2-vector of integers & get/set & Position of the monitor in screen coordinates (may not equal pixels). \\\hline
+    title & text & get/set & Title shown at the heading of the window and task bar \\\hline
+    resizable & boolean & get/set & Enable the user to resize the window. \\\hline
+    decorated & boolean & get/set & Enable the decoration around the window. \\\hline
+    opacity & number & get/set & Opacity used by the window manager when embedding this window in its environment. The value must lie in 0 to 1\\\hline
+    monitor & enumerated & get/set/unset/enum & Monitor used to show this window full-screen. When set, the window is displayed full-screen on that monitor. Otherwise, the window behaves normally. \\\hline
+    
+    video-mode:frame-rate & rational & get/set & Frame rate in frames per second. \\\hline
+    video-mode:pixel-aspect-ratio & rational & get & Ratio between the physical width and height of pixels. \\\hline
+    video-mode:resolution & resolution & get & Size of the resulting frames in pixels. \\\hline
+    video-mode:color-primaries & enumerated & get & Color primaries used when compositing. Currently ignored. \\\hline
+    video-mode:color-model & enumerated & get & Color model of the frames. \\\hline
+    video-mode:color-transfer-function & enumerated & get/set/enum & Gamma correction standard of the frames. \\\hline
+    video-mode:color-subsampling & enumerated & get & Subsampling scheme of the resulting frame. \\\hline
+    video-mode:color-range & enumerated & get & Range encompassed by component values. \\\hline
+    video-mode:color-format & enumerated & get/set/enum & Pixel storage format. It defines the color depth. \\\hline
+
+    \caption{Window output commands}
+    \label{tab:window_output_commands}
+\end{longtable}
+
+\begin{longtable}{|l|c|c|p{12cm}|}
+    \hline
+    Attribute/Command & Type & Attribute commands & Desription \\\hline
+    
+    video-scaling:filter & enumerated & get/set/enum & Filter used to scale the frames in the background. Possible values: nearest, linear and cubic. \\\hline
+    video-scaling:mode & enumerated & get/set/enum & Adjusting done on the frame when scaling. Possible values: stretch, box, crop, clampVertically and clampHorizontally \\\hline
+    
+    video-mode:pixel-aspect-ratio & rational & get/set & Ratio between the physical width and height of pixels. \\\hline
+    video-mode:resolution & resolution & get/set & Size of the resulting frame in pixels. \\\hline
+    video-mode:color-primaries & enumerated & get/set/enum & Color primaries used when compositing. Currently ignored. \\\hline
+    video-mode:color-model & enumerated & get & Color model used when compositing. \\\hline
+    video-mode:color-transfer-function & enumerated & get/set/enum & Gamma correction standard of the result. \\\hline
+    video-mode:color-subsampling & enumerated & get & Subsampling scheme of the resulting frame. \\\hline
+    video-mode:color-range & enumerated & get & Range encompassed by component values. \\\hline
+    video-mode:color-format & enumerated & get/set/enum & Pixel storage format. It defines the color depth. \\\hline
+    
+    us-overlay:count & integer & get/set & Upstream keyer count \\\hline
+    us-overlay:ena & boolean & get/set & Visibility of a upstream keyer. The first token is the index of the keyer. Then the value. \\\hline
+    us-overlay:transition & boolean & get/set & Transition of an upstream keyer. The first token is the index of the keyer. Then the value. \\\hline
+    us-overlay:feed & integer & get/set/unset & Signal source of an upstream keyer. The first token is the index of the keyer. Then, the name of the input port (fillIn/keyIn). Finally, the input index. \\\hline
+    
+    ds-overlay:count & integer & get/set & Downstream keyer count \\\hline
+    ds-overlay:ena & boolean & get/set & Visibility of a downstream keyer. The first token is the index of the keyer. Then the value. \\\hline
+    ds-overlay:transition & boolean & get/set & Transition of a downstream keyer. The first token is the index of the keyer. Then the value. \\\hline
+    ds-overlay:feed & integer & get/set/unset & Signal source of an downstream keyer. The first token is the index of the keyer. Then, the name of the input port (fillIn/keyIn). Finally, the input index. \\\hline
+    
+    input:count & integer & get/set & Input count for this Mix Effect unit. \\\hline
+    pgm & integer & get/set/unset & Input index for program's background. \\\hline
+    pvw & integer & get/set/unset & Input index for preview's background. \\\hline
+    cut & & & This command swaps the contents of the program and preview buses. \\\hline
+    
+    transition & & & This command executes an automatic transition. \\\hline
+    transition:pvw & boolean & get/set & If enabled, the transition occurs in the preview bus. \\\hline
+    transition:bar & number & get/set & Manually set the progress of the transition. \\\hline
+    transition:duration & duration & get/set & Duration of the transition when executed automatically .\\\hline
+    transition:effect & enumerated & get/set/enum/config & Effect used in the transition. Possible values: Mix and DVE. \\\hline
+    
+    \caption{Mix effect commands}
+    \label{tab:mix_effect_commands}
+\end{longtable}
+
+\begin{longtable}{|l|c|c|p{12cm}|}
+
+    \hline
+    Attribute/Command & Type & Attribute commands & Desription \\\hline
+    
+    video-scaling:filter & enumerated & get/set/enum & Filter used to scale the frames. Possible values: nearest, linear and cubic. \\\hline
+    video-scaling:mode & enumerated & get/set/enum & Adjusting done on the frame when scaling. Possible values: stretch, box, crop, clampVertically and clampHorizontally. \\\hline
+    
+    size & 2-vector of numbers & get/set & Area encompassed by the keyer. \\\hline
+    shape & See description & get/set & Cubic Bézier contours used to crop the frame. Each of the contours is a distinct token. The contours are defined as a semi-colon separated list of 2-vector of numbers. The continuity of the curve is ensured skipping the last point of each section. Therefore, the length of the list must be a multiple of 3. \\\hline
+    
+    transform:pos & 3-vector of numbers & get/set & Position of the keyer. \\\hline
+    transform:rot & quaternion & get/set & Rotation of the keyer. \\\hline
+    transform:scale & 3-vector of numbers & get/set & Scale of the keyer. \\\hline
+    
+    blending:mode & enumerated & get/set/enum & Blending mode used to mix the background with the contents of the keyer. Possible values: write, opacity, difference, differenceInv, lighten, darken, multiply and screen. \\\hline
+    blending:opacity & number & get/set & Gain applied to the alpha channel. \\\hline
+    
+    linear-key:ena & boolean & get/set & Enable of the linear key. \\\hline
+    linear-key:inv & boolean & get/set & Complementation of the linear key. \\\hline
+    linear-key:ch & enumerated & get/set/enum & Source component of the linear key. Possible values: fillR, fillG, fillB, fillA, fillY, keyR, keyG, keyB, keyA and keyY. \\\hline
+    
+    luma-key:ena & boolean & get/set & Enable of the luma key. \\\hline
+    luma-key:inv & boolean & get/set & Complementation of the luma key \\\hline
+    luma-key:min & number & get/set & Lower threshold of the luma key. \\\hline
+    luma-key:max & number & get/set & Upper threshold of the luma key. \\\hline
+    
+    chroma-key:ena & boolean & get/set & Enable of the chroma key \\\hline
+    chroma-key:hue:center & number & get/set & Hue value in degrees of the colour to delete using the chroma key .\\\hline
+    chroma-key:hue:span & number & get/set & Width of the interval of hues to delete using the chroma key. \\\hline
+    chroma-key:hue:smooth & number & get/set & Width of the interval of hues to partially delete using the chroma key. \\\hline
+    chroma-key:sat:min & number & get/set & Colour saturation threshold for the chroma key. \\\hline
+    chroma-key:sat:smooth & number & get/set &  Colour saturation threshold's transition interval for the chroma key. \\\hline
+    chroma-key:val:min & number & get/set & Brightness threshold for the chroma key. \\\hline
+    chroma-key:val:smooth & number & get/set &  Brightness threshold's transition interval for the chroma key. \\\hline
+    
+    \caption{Mix effect commands}
+    \label{tab:keyer_commands}
+\end{longtable}
+\end{landscape}
 
 \end{document}

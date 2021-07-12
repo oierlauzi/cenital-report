@@ -129,8 +129,8 @@ The resulting RGB(A) image is stored on a \textit{Vulkan} texture local to the \
 There are some exceptional cases where the aforementioned conversions are not performed. For those cases, the data is copied directly from the \gls{cpu} to the definitive \gls{gpu} buffer, preserving the original pixel format. These exceptions are the following:
 
 \begin{enumerate}[label=(\alph*)]
-    \item Source data is full-range RGB(A) with no gamma correction. After all, none of the stages would be executed.
-    \item Source data is full-range RGB(A), with 8bits per component, IEC61966-2-1 encoding and \textit{Vulkan} supports sRGB formats. In this case, all operations except the linearization are a no-op. When sRGB formats are supported, this linearization is performed on the \gls{tmu} of the \gls{gpu} each time the texture is accessed.
+    \item Source data is full-range multiplexed RGB(A) with no gamma correction. After all, none of the stages would be executed.
+    \item Source data is full-range multiplexed RGB(A), with 8bits per component, IEC61966-2-1 encoding and \textit{Vulkan} supports sRGB formats. In this case, all operations except the linearization are a no-op. When sRGB formats are supported, this linearization is performed on the \gls{tmu} of the \gls{gpu} each time the texture is accessed.
 \end{enumerate}
 
 The reverse pipeline has been partially implemented, but none of the features provided by this mixer make extensive use of it.\newline
@@ -150,7 +150,7 @@ This presents a new problem. If the aspect ratio of the rectangle does not match
     \item \textbf{Clamp vertically}: The image will be resized by the vertical axis.
 \end{itemize}
 
-Another aspect regarding the textures is the sampling. When the aforementioned rectangle is rendered, each of its \glspl{pixel} will have to be assigned a color. This color comes from the texture, but it may not correspond to a intermediary position between \glspl{texel}. Therefore, neighbouring \glspl{texel} need to be interpolated to obtain the actual color. This interpolation must be performed with linear color values. Luckily, in the previous section, this premise was ensured. The interpolation techniques illustrated in the figures \ref{fig:04:texture_sampling1} and \ref{fig:04:texture_sampling2} have been implemented.\newline
+Another aspect regarding the textures is the sampling. When the aforementioned rectangle is rendered, each of its \glspl{pixel} will have to be assigned a color. This color comes from the texture, but it may correspond to a intermediary position between \glspl{texel}. Therefore, neighbouring \glspl{texel} need to be interpolated to obtain the actual color. This interpolation must be performed with linear color values. Luckily, in the previous section, this premise was ensured. The interpolation techniques illustrated in the figures \ref{fig:04:texture_sampling1} and \ref{fig:04:texture_sampling2} have been implemented.\newline
 
 \begin{figure}[htbp]
     \centering
@@ -174,7 +174,7 @@ Another aspect regarding the textures is the sampling. When the aforementioned r
 
 Using nearest filtering is the cheapest option, as it requires a single texture access per sample. Bilinear filtering requires 4 accesses and 16 for bicubic filtering. Therefore, the later one is the costliest one and should not be used indiscriminately.\newline
 
-From the implementation point of view, nearest filtering is always preformed by \textit{Vulkan}. In most cases, bilinear filtering is also executed by \textit{Vulkan} natively, but if this is not possible, a manual fallback method exists that implements it using 4 nearest accesses. Lastly, \textit{Vulkan} rarely supports bicubic filtering, but if this is the case, the \texttt{VK\_IMG\_filter\_cubic} extension is used. For the rest of the cases, it is implemented through 16 nearest accesses or 4 bilinear accesses. The later technique is based on a publicly available algorithm\cite{bicubicGlsl}.\newline
+From the implementation point of view, nearest filtering is always performed by \textit{Vulkan}. In most cases, bilinear filtering is also executed by \textit{Vulkan} natively, but if this is not possible, a manual fallback method exists that implements it using 4 nearest accesses. Lastly, \textit{Vulkan} rarely supports bicubic filtering, but if this is the case, the \texttt{VK\_IMG\_filter\_cubic} extension is used. For the rest of the cases, it is implemented through 16 nearest accesses or 4 bilinear accesses. The later technique is based on a publicly available algorithm\cite{bicubicGlsl}.\newline
 
 The resulting object is embedded into the framebuffer, the memory area where the \gls{gpu} works on. If the object presents transparency information, either because the original frame does or the processing has added to it, it will be blended with the existing contents in the framebuffer according to one of the following compositing modes. An example of each one of them can be seen in the figure \ref{fig:04:blending_modes}
 
@@ -272,14 +272,16 @@ As shown in the figure \ref{fig:04:compositing_no_transition}, generally, only t
 
 However, if a transition is in progress, this behaviour changes, as \glspl{dsk} must be applied after the transition. Therefore, the other two compositors are used to generate a intermediate image that contains the background with all the \glspl{usk}. Both program and preview intermediate images are used to generate the transition on the configured output bus, as displayed in the figure \ref{fig:04:compositing_transition}. The other output bus is also composited but without the transition effect.
 
-\begin{sidewaysfigure}[htbp]
+\begin{landscape}
+\begin{figure}[htbp]
     \centering
-    \includegraphics[width=\textwidth]{Mix effect-Transition}
+    \includegraphics[width=\linewidth]{Mix effect-Transition}
     
     Layer legend: \textcolor{red}{Program background} \textcolor{green}{Preview background} \textcolor{yellow}{\glspl{usk}} \textcolor{orange}{\glspl{dsk}} \textcolor{blue}{Transition} 
     \caption{Compositing layers when a transition is in progress in the program bus}
     \label{fig:04:compositing_transition}
-\end{sidewaysfigure}
+\end{figure}
+\end{landscape}
 
 \subsubsection{Overlays::Base}
 This class serves as the base class for overlays. It exposes the interface required by the mix effect to perform the compositing. Currently, the only class that implements this interface is the \texttt{Keyer} but other overlays such as 3D models can be implemented to enhance the functionality of the \glspl{me}.
@@ -336,7 +338,7 @@ In the figure \ref{fig:04:keyer_block_digram} it can be seen that the keyers tak
 The keying signal can determine the opacity of the filling signal in the traditional three manners: Linear keying, luma keying and chroma keying. Moreover, a pattern and a global gain can also be used as the key source. These five opacity values are multiplied together and used as the $\alpha$ source in the blending stage. Any set of these five transparency sources can be used. If not enabled, it can be considered that a '$1.0$' is fed to the multiplier.\newline
 
 \subsubsection{Linear key}
-Linear keying refers to using an existing component as a transparency source for the fill signal. In this case, any of the R, G, B, A and Y components of either key or fill signals can be used as a transparency source. Moreover, the result can be complemented. As the source image is in RGB(A) colour model, in case the Y component is used, it needs to be computed according to the YUV/YIQ formula shown in the equation \eqref{eq:04:rgb2yuv_y}.\newline
+Linear keying refers to the use of an existing component as a transparency source for the fill signal. In this case, any of the R, G, B, A and Y components of either key or fill signals can be used as a transparency source. Moreover, the result can be complemented. As the source image is in RGB(A) colour model, in case the Y component is used, it needs to be computed according to the YUV/YIQ formula shown in the equation \eqref{eq:04:rgb2yuv_y}.\newline
 
 \begin{equation}\label{eq:04:rgb2yuv_y}
     Y = 0.299R + 0.587G + 0.114B

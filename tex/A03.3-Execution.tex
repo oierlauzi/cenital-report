@@ -2,4 +2,15 @@
 
 \begin{document}
 
+If \textit{Cenital} was installed inside one of the directories referenced by \texttt{\$PATH} (as is the case when following the previous installation process) simply type the \texttt{cenital} command. If this is not the case,  \texttt{cd} to the directory of the binary and type \texttt{./cenital}. Sometimes the firewall will reject listening to port 80 (the default port for WebSocket). The solution to this problem is explained hereafter.
+
+\subsection{Command line arguments}
+Similarly to other Unix commands, this accepts command line arguments to tweak the behaviour of the application. These arguments are the following:
+
+\begin{itemize}
+    \item \textbf{-t} or \textbf{--tcp-port} is used to establish the TCP port for communications. The default value is 9600 and setting it to 0 disables it.
+    \item \textbf{-w} or \textbf{--web-socket-port} is used to establish the WebSocket port for communications. The default value is 80 and setting it to 0 disables it. If the 80 port is rejected by the firewall, try changing its value, for instance to 9601.
+    \item \textbf{-v} or \textbf{--verbose} is used to display debug information
+\end{itemize}
+
 \end{document}

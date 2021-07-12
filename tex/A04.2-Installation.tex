@@ -2,4 +2,26 @@
 
 \begin{document}
 
+As this is a web application, there is no need to install any piece of software. A publicly accessible instance is available at \url{https://oierlauzi.github.io/cenital-web-control/}. However, to modify and deploy a modified version, some additional steps must be carried out.\newline
+
+\subsection{Development and deployment of the application}
+
+The building process of the application is managed by \texttt{npm}. Therefore, this needs to be installed before proceding\footnote{\url{https://docs.npmjs.com/cli/v7/configuring-npm/install}}. Once ready, go to the project directory (a folder named as \texttt{cenital-web-control} in the \texttt{src} directory) and install all the dependencies using the following command:
+
+\begin{lstlisting}[language=bash]
+    npm install
+\end{lstlisting}
+
+A development server may be started using the next command. This server is useful to rapidly prototype new features, but should not be used for real deployments.
+
+\begin{lstlisting}[language=bash]
+    npm run serve
+\end{lstlisting}
+
+The last step is to deploy the website. This can be done using the following command, which outputs a standard website structure to the \texttt{dist} directory. These contents should be placed on a web server, which can be self-hosted or in the cloud.
+
+\begin{lstlisting}[language=bash]
+    npm run build
+\end{lstlisting}
+
 \end{document}

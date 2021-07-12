@@ -36,7 +36,7 @@ For the sake of obtaining colorimetrically correct results, it will support the 
 
 Architecturally, the mixer will be engineered to follow the server-client pattern. The server will have the duty of ingesting, processing and outputting video, while the client(s) will be the front-end commanding to the server changes in the configuration. In case there are multiple clients connected to the same server, the server will also be responsible for synchronizing the state across all clients. Client-server communications will be performed using a purpose-built \gls{cli} over \gls{tcp} or Web-Sockets.\newline
 
-Clients will serve as the user interface of this software. The server is agnostic of this interface, so multiple variants of the client may be implemented. In this project, the primary focus will be on developing a web application which allows to configure most aspects of the server. However, a hardware prototype of a control panel will be considered as well.\newline
+Clients will serve as the user interface of this software. The server is agnostic of this interface, so multiple variants of the client may be implemented. In this project, the primary focus will be on developing a web application that allows to configure most aspects of the server. However, a hardware prototype of a control panel will be considered as well.\newline
 
 %Print bibliography if it is being compiled standalone
 %\printbibliography

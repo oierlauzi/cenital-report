@@ -8,14 +8,14 @@
 \label{chap:bezier}
 
 \section{Introduction}
-Bézier curves are a type of parametric curves invented by Pierre Bézier in the 1960s. They are widely used in graphic design software and \gls{cad} tools, as they provide an intuitive control over the shape of the curve. This intuitiveness is achieved using control points, which in colloquial terms, attract the curve towards them. The number of control points that are used define the degree of the curve\cite{pomax:bezier}. Nowadays, most programs use cubic Bézier curves, which are defined by 2 control points plus the two extreme points, as shown in the figure \ref{fig:cubic}.\newline
+Bézier curves are a type of parametric curves invented by Pierre Bézier in the 1960s. They are widely used in graphic design software and \gls{cad} tools, as they provide an intuitive control over the shape of the curve. This intuitiveness is achieved using control points, which in colloquial terms, attract the curve towards them. The number of control points that are used define the degree of the curve\cite{pomax:bezier}. Nowadays, most programs use cubic Bézier curves, which are defined by 2 control points plus the two extreme points, as shown in the figure \ref{fig:a01:cubic}.\newline
 
 \begin{figure}[hbtp]
     \centering
     \includegraphics[width=0.5\textwidth]{Cubic Bezier curve}
  
     \caption{Cubic Bézier example}
-    \label{fig:cubic}
+    \label{fig:a01:cubic}
 \end{figure}
 
 Modern \glspl{gpu} are highly specialized in rendering triangles. Therefore, it may seem that rendering smooth Bézier curves is an impossible task for this hardware. However, in the last 2 decades, several approaches have been developed to solve this problem.\newline
@@ -29,7 +29,7 @@ Here is where Loop-Blinn's solution comes into place. This solution consists in 
 This last approach has been chosen to crop video frames with an arbitrary shape. In particular, cubic curves will be used, as they have become an industry standard.
 
 \section{Mathematical definition of Bézier curves}
-The analytical form of the Bézier curves is based on polynomials of arbitrary degree. For a $N$-degree Bézier curve, $N+1$ control points are needed, where two of them will be the start and end points. Therefore, a cubic curve is defined by 4 control points, as shown in the figure \ref{fig:cubic}. The generic form for a $N$-degree Bézier curve is displayed in the equation \eqref{eq:bezier} \cite{pomax:bezier, wiki:bezier}. Setting $N=3$ for cubic curves, the equation \eqref{eq:bezier3} is obtained.\newline
+The analytical form of the Bézier curves is based on polynomials of arbitrary degree. For a $N$-degree Bézier curve, $N+1$ control points are needed, where two of them will be the start and end points. Therefore, a cubic curve is defined by 4 control points, as shown in the figure \ref{fig:a01:cubic}. The generic form for a $N$-degree Bézier curve is displayed in the equation \eqref{eq:bezier} \cite{pomax:bezier, wiki:bezier}. Setting $N=3$ for cubic curves, the equation \eqref{eq:bezier3} is obtained.\newline
 
 \begin{equation} \label{eq:bezier}
     B(t) = \sum_{i = 0}^{N} P_i \cdot b_{N,i}(t) \qquad t \in [0, 1]
@@ -55,7 +55,7 @@ The derivative of a Bézier curve will be another Bézier curve of one degree lo
     \frac{d}{dt} B(t) = N \sum_{i = 0}^{N-1} (P_{i+1} - P_i) \cdot b_{N-1,i} \qquad t \in [0, 1]
 \end{equation}
 
-If $t=0$ and $t=1$ are substituted in the expression \eqref{eq:bezier}, the equation simplifies down to $P_0$ and $P_N$ respectively, this is, the extreme points of the curve. If the same values are substituted in the derivative, the expression is simplified to the difference between the extreme points and its neighbor. These four trivial cases are displayed in the equation \eqref{eq:bezier_trivial}. Although they might seem useless at first glance, they play a key role on the intuitiveness of the Bézier curves. It can be easily inferred that the curve in the extreme points will be tangent to the line joining the extreme point with its neighboring control point. This can be confirmed observing the figure \ref{fig:cubic}, where the curve in $P_0$ is tangent to $\overrightarrow{P_0P_1}$ and tangent to $\overrightarrow{P_2P_3}$ in $P_3$.\newline
+If $t=0$ and $t=1$ are substituted in the expression \eqref{eq:bezier}, the equation simplifies down to $P_0$ and $P_N$ respectively, this is, the extreme points of the curve. If the same values are substituted in the derivative, the expression is simplified to the difference between the extreme points and its neighbor. These four trivial cases are displayed in the equation \eqref{eq:bezier_trivial}. Although they might seem useless at first glance, they play a key role on the intuitiveness of the Bézier curves. It can be easily inferred that the curve in the extreme points will be tangent to the line joining the extreme point with its neighboring control point. This can be confirmed observing the figure \ref{fig:a01:cubic}, where the curve in $P_0$ is tangent to $\overrightarrow{P_0P_1}$ and tangent to $\overrightarrow{P_2P_3}$ in $P_3$.\newline
 
 \begin{equation} \label{eq:bezier_trivial}
     B(0) = P_0 \quad B(1) = P_N \quad \frac{d}{dt} B(0) = N(P_1 - P_0) \quad \frac{d}{dt} B(1) = N(P_{N-1} - P_N)
@@ -67,7 +67,7 @@ This statement has also an impact on the polycurves. A polycurve will only be de
 Loop Blinn's Bézier curve rasterization algorithm was developed by Charles Loop and Jim Blinn in 2005. For the purposes of this project, a variant of this algorithm has been implemented to be able to crop a video frame with an arbitrary shape. The original algorithm has two variants, the first one being for quadratic curves and the other one for cubic curves. In this case, the later one has been chosen, as quadratic curves can be easily converted into cubic curves.
 
 \subsection{The test image}
-This algorithm must handle some extreme cases. Therefore, to showcase how all those situations are handled, the test image must feature them. For this reason, the vectorization of a whale shown in the figure \ref{fig:whale} has been chosen, as it provides the following special cases:
+This algorithm must handle some extreme cases. Therefore, to showcase how all those situations are handled, the test image must feature them. For this reason, the vectorization of a whale shown in the figure \ref{fig:a01:whale} has been chosen, as it provides the following special cases:
 
 \begin{itemize}
     \item No holes, as currently they are not supported.
@@ -83,17 +83,17 @@ This algorithm must handle some extreme cases. Therefore, to showcase how all th
 
 \begin{figure}[hbtp]
     \centering
-    \subfigure[Filled]{\includegraphics[width=0.45\textwidth]{Whale Fill}}
-    \subfigure[Outline with control points]{\includegraphics[width=0.45\textwidth]{Whale Ctrl}}
+    \subfigure[Filled]{\includegraphics[width=0.45\textwidth]{Whale}}
+    \subfigure[Outline with control points]{\includegraphics[width=0.45\textwidth]{Whale Control}}
 
     \caption{Vectorization of a cartoon whale}
-    \label{fig:whale}
+    \label{fig:a01:whale}
 \end{figure}
 
 \subsection{Procedure}
 As mentioned before, the input data for the algorithm is a collection of contours which in turn are formed by multiple cubic Bézier curves. As the contour must be continuous and closed, two consecutive segments share a single extreme point, so there is no need to store it twice. Therefore, for a given contour formed by $M$ $N$-degree segments, $M \cdot N$ points will be used to store the contour. Note that each of the individual segments is defined by $N+1$ control points.\newline 
 
-Although the algorithm aims to have as few as possible input restrictions, there is one condition that the input must meet: The contours must not self-intersect. An example of a valid and invalid contour is displayed in the figure \ref{fig:valid}\newline
+Although the algorithm aims to have as few as possible input restrictions, there is one condition that the input must meet: The contours must not self-intersect. An example of a valid and invalid contour is displayed in the figure \ref{fig:a01:valid}\newline
 
 \begin{figure}[hbtp]
     \centering
@@ -101,27 +101,27 @@ Although the algorithm aims to have as few as possible input restrictions, there
     \subfigure[Invalid]{\includegraphics[width=0.45\textwidth]{Invalid Contour}}
 
     \caption{Valid and invalid input data}
-    \label{fig:valid}
+    \label{fig:a01:valid}
 \end{figure}
 
 Most of the operations described in the following steps will be performed repeatedly on each of the contours. Therefore, only the body of the whale will be used as an example for those steps.\newline
 
 \subsubsection{Contour sanitation}
-In the context of computer graphics, contours and polygons are usually described in \gls{ccw} order. In fact, if a contour is defined as \gls{cw}, it is usually to signal that it is a hole inside another bigger contour. This convention is illustrated in the figure \ref{fig:winding}. However, as mentioned earlier, this algorithm does not currently support holes, so all \gls{cw} contours are turned into \gls{ccw} by reversing the order of its points. Therefore, from now on, all contours can be assumed to be \gls{ccw}.\newline
+In the context of computer graphics, contours and polygons are usually described in \gls{ccw} order. In fact, if a contour is defined as \gls{cw}, it is usually to signal that it is a hole inside another bigger contour. This convention is illustrated in the figure \ref{fig:a01:winding}. However, as mentioned earlier, this algorithm does not currently support holes, so all \gls{cw} contours are turned into \gls{ccw} by reversing the order of its points. Therefore, from now on, all contours can be assumed to be \gls{ccw}.\newline
 
 \begin{figure}[hbtp]
     \centering
     \includegraphics[width=0.7\textwidth]{Winding}
 
     \caption{Winding convention}
-    \label{fig:winding}
+    \label{fig:a01:winding}
 \end{figure}
 
 
 \subsubsection{Outer-hull triangulation}
 As mentioned before, cubic segments are defined by four control points. Due to the curve tangency properties, which were described earlier, it can be ensured that a cubic Bézier curve will not escape the convex polygon formed by its four control points. This is a strong property, as all calculations can be narrowed down to this area. As these computations will be performed in the fragment shader of the \gls{gpu}'s graphics pipeline, this convex polygon needs to be triangulated. The collection of convex polygons regarding each of the segments, will be called the outer hull. Each of the pixels rastered by the outer hull will have to be individually evaluated to determine whether it is inside or outside the contour.\newline 
 
-Note that until this point the term \textquote{convex polygon} has been vaguely used. This is because the nature of it is unknown. Therefore, the first step is to determine the convex shape formed by the control points. This can be boiled down to two cases, assuming that the control points are not colinear nor the same point. The first case is the trivial one, the four points form a convex quadrilateral. The other one is the tricky case, which occurs when they form a concave quadrilateral, as shown in the figure \ref{fig:quad_triang}. In this situation, a triangle -which is always convex- will be formed, containing one of the points inside.\newline
+Note that until this point the term \textquote{convex polygon} has been vaguely used. This is because the nature of it is unknown. Therefore, the first step is to determine the convex shape formed by the control points. This can be boiled down to two cases, assuming that the control points are not colinear nor the same point. The first case is the trivial one, the four points form a convex quadrilateral. The other one is the tricky case, which occurs when they form a concave quadrilateral, as shown in the figure \ref{fig:a01:quad_triang}. In this situation, a triangle -which is always convex- will be formed, containing one of the points inside.\newline
 
 \begin{figure}[hbtp]
     \centering
@@ -129,28 +129,36 @@ Note that until this point the term \textquote{convex polygon} has been vaguely 
     \subfigure[Concave quadrilateral turned into a triangle]{\includegraphics[width=0.3\textwidth]{Concave Quad triangulation}}
 
     \caption{Triangulation of the outer-hull}
-    \label{fig:quad_triang}
+    \label{fig:a01:quad_triang}
 \end{figure}
 
 In the first case, the triangulation is performed by splitting the quad on its shortest diagonal. The benefit of splitting it on its shortest diagonal is that repeated pixel calculations are minimized. In the second case, three triangles will be formed, all having the middle vertex in common. For the sake of avoiding repeated vertex shader executions, both triangulations are made in a triangle-strip compatible manner and using a index buffer. This adds extra complexity to the algorithm, but it may be beneficial for complex contours.\newline
 
-If two curves come very close, their bounding convex polygons may collide. This can lead to rendering artifacts, so it needs to be addressed. The solution adopted here is fairly crude, as this is not a common case. The solution consists of splitting both colliding segments in halves, using the method described earlier. All cases that occur on the whale's image have been highlighted in the figure \ref{fig:whale_intersections}. There is another potential case that requires splitting a segment in two. This other situation will be mentioned later.\newline
+If two curves come very close, their bounding convex polygons may collide. This can lead to rendering artifacts, so it needs to be addressed. The solution adopted here is fairly crude, as this is not a common case. The solution consists of splitting both colliding segments in halves, using the method described earlier. All cases that occur on the whale's image have been highlighted in the figure \ref{fig:a01:whale_intersections}. There is another potential case that requires splitting a segment in two. This other situation will be mentioned later.\newline
 
 \begin{figure}[hbtp]
     \centering
-    \subfigure[Intersections]{\includegraphics[width=0.45\textwidth]{Whale Ctrl Intersections}}
-    \subfigure[After splitting]{\includegraphics[width=0.45\textwidth]{Whale Ctrl}}
+    \subfigure[Intersections]{\includegraphics[width=0.45\textwidth]{Whale Control Intersections}}
+    \subfigure[After splitting]{\includegraphics[width=0.45\textwidth]{Whale Control Segmented Intersections}}
 
-    \caption{Vectorization of a cartoon whale}
-    \label{fig:whale_intersections}
+    \caption{Intersection removal example}
+    \label{fig:a01:whale_intersections}
 \end{figure}
 
 \subsubsection{Inner-hull extraction and triangulation}
 After defining the outer hull, a big unfilled void remains in the middle of the contour. Luckily, it can be ensured that this arbitrarily shaped polygon is fully inside the contour. Therefore, the only task regarding it is to triangulate. The algorithm selected for this task is based on the source code of PolyPartition\cite{polypartition}, although it has been optimized to avoid unnecessary calculations and heap allocations.\newline
 
-The first step is to determine which pairs of vertices are mutually visible. Assuming that the polygon does not self-intersect, it can be ensured that consecutive points are mutually visible. However, this may not be true for other pairs of vertices if the polygon is concave. For the sake of testing their visibility, the intersection between the line joining them and all edges of the polygon is computed. Moreover, this line must lie between the two edges associated with the departing vertex. If no intersection is found and the line does not exit the polygon, it can be considered a diagonal. In the figure \ref{} several examples of these conditions are displayed.\newline
+The first step is to determine which pairs of vertices are mutually visible. Assuming that the polygon does not self-intersect, it can be ensured that consecutive points are mutually visible. However, this may not be true for other pairs of vertices if the polygon is concave. For the sake of testing their visibility, the intersection between the line joining them and all edges of the polygon is computed. Moreover, this line must lie between the two edges associated with the departing vertex. If no intersection is found and the line does not exit the polygon, it can be considered a diagonal.\newline
 
-The only remaining step is to choose the appropriate diagonals to triangulate the polygon. To begin with, a random edge of the polygon is placed into a queue, which was previously empty. Then, a line is extracted from this queue -obviously, the first time, this line will be the newly placed edge-. For this line, the closest vertex to which diagonals or edges can be traced is chosen. These diagonals -not the edges- are pushed into the queue, so that they are the starting point for future iterations. This process is repeated indefinitely until the queue is empty. On each iteration, zero, one, or two diagonals will be added to the queue, while a single one will be removed. A possible execution is shown in the figure \ref{}.\newline
+The only remaining step is to choose the appropriate diagonals to triangulate the polygon. To begin with, a random edge of the polygon is placed into a queue, which was previously empty. Then, a line is extracted from this queue -obviously, the first time, this line will be the newly placed edge-. For this line, the closest vertex to which diagonals or edges can be traced is chosen. These diagonals -not the edges- are pushed into the queue, so that they are the starting point for future iterations. This process is repeated indefinitely until the queue is empty. On each iteration, zero, one, or two diagonals will be added to the queue, while a single one will be removed. A possible result of the execution of this algorithm is shown in the figure \ref{fig:a01:triangulation}.\newline
+
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=\textwidth]{Whale Triangulated}
+
+    \caption{Triangulation of the inner-hull and outer-hull}
+    \label{fig:a01:triangulation}
+\end{figure}
 
 The only reason for not supporting holes is that the chosen triangulation algorithm does not support them. Its not even an efficient algorithm, as it has $O(n^3)$ complexity, but it provides the best triangulation in all situations. Definitively, there is a lot of room for improvement in this section. Therefore, for future releases, a Constrained Delaunay triangulation algorithm will be considered. This is the algorithm used by Charles Loop and Jim Blinn in their paper\cite{loopblinn2005}. This other algorithm has $O(n \log n)$ complexity\cite{wiki:constrained_delaunay}.\newline
 
@@ -182,7 +190,7 @@ The input for this section will be each of the individual segments that form the
     \item Point
 \end{itemize}
 
-As the equations vary from topology to topology, the first step is to classify the segment. For this task the $\delta_1, \delta_2, \delta_3$ parameters and the discriminant are calculated according to the equations \eqref{eq:loopblinna} \eqref{eq:loopblinnd} \eqref{eq:loopblinndisc}. Note that a affine space is used, so that $P_i' = [P_i, 1]$. This is how the mixed product of 2D points is defined. As a small caveat, the result of the mixed product may get very large, easily overwhelming 32bit float-s. Luckily, multiplying the result by a constant does not alter the outcome, so the $a$ values should be normalized to avoid computing the $\delta$-s with large numbers, potentially introducing floating-point errors.
+As the equations vary from topology to topology, the first step is to classify the segments. For this task the $\delta_1, \delta_2, \delta_3$ parameters and the discriminant are calculated according to the equations \eqref{eq:loopblinna} \eqref{eq:loopblinnd} \eqref{eq:loopblinndisc}. Note that a affine space is used, so that $P_i' = [P_i, 1]$. This is how the mixed product of 2D points is defined. As a small caveat, the result of the mixed product may get very large, easily overwhelming 32bit float-s. Luckily, multiplying the result by a constant does not alter the outcome, so the $a$ values should be normalized to avoid computing the $\delta$-s with large numbers, potentially introducing floating-point errors.
 
 \begin{equation} \label{eq:loopblinna}
     a_1 = P_0 \cdot P_3 \times P_2 \qquad
@@ -315,7 +323,7 @@ Once these coordinates are assigned to the control point vertices, they are uplo
 Similarly to as proposed by Antonio J. Rueda, Juan Ruiz de Miras, and Francisco R. Feito in their paper \cite{ruedaruizfeito2008}, many parts of this later part of the algorithm could be executed by the geometry shader of the \gls{gpu}, instead of doing so in the \gls{cpu}. However, this last optimization has not been considered as geometry shader support is not mandatory in Vulkan, so a fallback method that computes the $klm$ values in the \gls{cpu} should be still available, greatly increasing the complexity and reducing maintainability.\newline 
 
 \subsubsection{Signed distance estimation}
-Considering all previous steps, the purposes of this chapter are already achieved. However, as displayed in the figure \ref{}, the edges appear to be jaggy due to the aliasing effect. With the aim of solving this, a widespread practice is to obtain the signed distance to the curve, this is, the distance from a point to the closest point on the curve with a different sign depending on the side of the contour on which the point lies. The convention is to use positive values for the outside while using negative ones for the inside.\newline
+Considering all previous steps, the purposes of this chapter are already achieved. However, the edges appear to be jaggy due to the aliasing effect. With the aim of solving this, a widespread practice is to obtain the signed distance to the curve, this is, the distance from a point to the closest point on the curve with a different sign depending on the side of the contour on which the point lies. The convention is to use positive values for the outside while using negative ones for the inside.\newline
 
 The $c(x, y)$ function displayed earlier has this particular tendency in points close to the contour, but with a small caveat: Its rate of change is not known. In order to implement a \gls{sdf} based anti-aliasing strategy, the distance to the border in pixels must be known, so that subpixel distances are used to modulate the intensity of frontier pixels. This metric can be obtained dividing $c(x, y)$ by the length of its gradient, as shown in the equation \eqref{eq:blinnloop_sdf}. This works because the gradient is approximately square to the border of its proximities. As a consequence, the $||\nabla sd(x, y)|| \approx 1$, which is one of the requirements for the signed distance functions.\newline
 
@@ -345,6 +353,16 @@ The gradient of the $c$ function can be easily obtained by applying the chain ru
 \end{equation}
 
 Modern \glspl{gpu} can approximate partial derivatives, as their processors are based on 2x2 or 4x4 \gls{simd} architectures. This means that at any given time, a 2x2 -or 4x4- group of pixels is being concurrently processed, allowing comparisons among them. In \gls{glsl}, the functions to obtain partial derivatives are named as \texttt{dFdx} and \texttt{dFdy} for $\frac{\partial}{\partial x}F(x, y)$ and $\frac{\partial}{\partial y}F(x, y)$, respectively.\newline
+
+After all this process, the image shown in the figure \ref{fig:a01:result} is obtained. Due to the nature of vector graphics, any transformation performed to this shape prior to the rasterization stage will not affect the sharpness of the rendered image.\newline
+
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=\textwidth]{Whale Crop}
+
+    \caption{Result of cropping an image with multiple Bézier contours}
+    \label{fig:a01:result}
+\end{figure}
 
 \printbibliography
 

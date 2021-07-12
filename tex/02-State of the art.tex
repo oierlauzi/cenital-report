@@ -22,7 +22,7 @@ As time passed, these commutation matrices evolved into complex analog mixers, w
     \label{fig:02:piher}
 \end{figure}
 
-Shortly after, in the late 1960s some \gls{tv} stations began broadcasting colour signals. This implies that vision mixer technology needed to evolve to handle these new signals. The presence of colour was useful to introduce a powerful technique which is still used: \textit{chroma keying}\cite{jpeters}\cite{tmMixerHistory}. This gives the ability to delete parts of a frame based on its colour. It is typically used in weather forecasts; the presenter sits in front of a green screen which gets swapped with a weather map by the vision mixer.\newline
+Shortly after, in the late 1960s, some \gls{tv} stations began broadcasting colour signals. This implies that vision mixer technology needed to evolve to handle these new signals. The presence of colour was useful to introduce a powerful technique that is still used: \textit{chroma keying}\cite{jpeters}\cite{tmMixerHistory}. This gives the ability to delete parts of a frame based on its colour. It is typically used in weather forecasts; where the presenter sits in front of a green screen which gets replaced with a weather map by the vision mixer.\newline
 
 Several years later, advancements in digital \gls{ic} manufacturing made possible to manipulate video digitally\cite{kitplus2015}. This introduced discrete digital effect processors, known as \glspl{dve}. These allowed spatial transformations of video frames, which were impractical with analog electronics, as high bandwidth signal delays would be needed. Shortly after, these discrete effect processors were integrated into the mixers. Nowadays, although the whole pipeline of the mixers is digital, the \gls{dve} term is still used to refer to those effects which involve spatial transformations of a frame\cite{OwensJim2020Tp}\cite{UtterbackAndrew2015STPa}.\newline
 
@@ -36,7 +36,7 @@ Modern vision mixers usually integrate many simpler mixers, known as \gls{me} ba
 
 Each \gls{me} has a signal matrix known as the \textit{crosspoint}. It serves as a router for input signals, which are represented as columns. Meanwhile, each of the feeds required by the \gls{me} will be represented as a row, which can only be fed by one or zero input signals.\newline
 
-\Glspl{me} are based on the program/preview operation model. This operation model consists in configuring the next composition in advance at the preview bus. Meanwhile, the program bus is permanently on air. When the time is right, the contents of the preview bus are swapped with the contents of the program bus, either by an instantaneous cut or a transition. Therefore, in practice, each \gls{me} generates two video signals: program and preview. This gives the operator the ability to double check for errors in the composition before it is broadcasted. However, manual changes in the program bus can be performed, although it is not a good operation practice, as any composition errors will be instantaneously transmitted.\newline
+\Glspl{me} are based on the program/preview operation model. This operation model consists in configuring the next composition in advance at the preview bus. Meanwhile, the program bus is permanently on air. When the time is right, the contents of the preview bus are swapped with the contents of the program bus, either by an instantaneous cut or a transition. Therefore, each \gls{me} generates two video signals: program and preview. This gives the operator the ability to double check for errors in the composition before it is broadcasted. However, manual changes in the program bus can be performed, although it is not a good operation practice, as any composition errors will be instantaneously transmitted.\newline
 
 Each of these composition buses are founded on the background layer. This layer is always visible -although it may be black or transparent- and encompasses the whole screen. As suggested by its name, its only ability is to display a video signal in the background. If no compositing is required, it is used to display the main video feed.\newline
 
@@ -53,13 +53,15 @@ Several layers called \textit{keyers} may be hierarchically added on top of this
 
 A general view of the signal path of a hypothetical 8-input \gls{me} unit can be seen in the figure \ref{fig:02:me_signal_path}.\newline
 
-\begin{sidewaysfigure}[htbp]
+\begin{landscape}
+\begin{figure}[htbp]
     \centering
-    \includegraphics[width=\textwidth]{ME Block Diagram}
+    \includegraphics[width=\linewidth]{ME Block Diagram}
 
     \caption{Signal path of a hypothetical ME with 8 inputs, 4 USKs and 2 DSKs}
     \label{fig:02:me_signal_path}
-\end{sidewaysfigure}
+\end{figure}
+\end{landscape}
 
 \subsection{Mixing equation}
 Most of the effects performed by a vision mixer can be modelled using the equation \eqref{eq:mixing}, where $a$ is the background image and $b$ is the foreground image. These two images get weight-averaged using the control signal $c$ and its complementary. This control signal is also an image. Therefore, places where $c$ is high, the foreground image will predominate. The reverse is also true, if $c$ is low, the background image will predominate. In the context of digital image processing, this is a linear point operation.
@@ -68,7 +70,7 @@ Most of the effects performed by a vision mixer can be modelled using the equati
     r(x, y) = (1 - c(x, y))  \cdot a(x, y) + c(x, y) \cdot b(x, y) \qquad c(x, y) \in [0, 1]
 \end{equation}
 
-To obtain colorimetrically correct results, $a$ and $b$ must be linear, this is, they must not contain a gamma correction. The most basic form of gamma correction is shown in the equation \eqref{eq:gamma} where $x'$ denotes the gamma corrected value and $x$ is the linear value. Typically, $\gamma$ equals $2.2$. Similarly, ITU-R described in the BT.1886 standard\cite{bt1886} the gamma transfer function which is shown in the equation \eqref{eq:bt1866}. These are not the only gamma corrections used in the industry, but they are the most important ones.\newline
+To obtain colorimetrically correct results, $a$ and $b$ must be linear, this is, they must not contain a gamma correction. The most basic form of gamma correction is shown in the equation \eqref{eq:gamma} where $x'$ denotes the gamma corrected value and $x$ is the linear value. Typically, $\gamma$ equals $2.2$. Similarly, ITU-R described in the BT.1886 standard\cite{bt1886} the gamma transfer function that is shown in the equation \eqref{eq:bt1866}. These are not the only gamma corrections used in the industry, but they are the most important ones.\newline
 
 \begin{equation} \label{eq:gamma}
     x = x'^{\gamma} \Longleftrightarrow x' = x^{\frac{1}{\gamma}} \qquad x, x' \in [0, 1]
@@ -119,7 +121,7 @@ This is similar to the previous type of keying. However, the matte signal is a i
 \subsubsection{Luma keying}
 This type of keying is very similar to the linear key. However, instead of using a dedicated signal for transparency information, it uses the filling signal's own luminosity. Similarly to linear keying, $a$ and $b$ terms of the mixing equation \eqref{eq:mixing} would be the background and fill images, but the control signal would be a function of the filling singnal's luminance channel: $c(x, y) = f(Y(x, y))$, hence its name.\newline
 
-This is only useful if the transparent parts are very black and opaque parts are very white or vice versa. Since the luminosity information can not be controlled separately, these keyers usually have more advanced settings which model the behaviour of the function that relates the luminance to the control image. Possible settings for this transfer function could be a lower and upper threshold, a toggle for inverting the result, etc. An example of this type of keying is displayed in the figure \ref{fig:02:luma_key_example}.
+This is only useful if the transparent parts are very black and opaque parts are very white or vice versa. Since the luminosity information can not be controlled separately, these keyers usually have more advanced settings that model the behaviour of the function that relates the luminance to the control image. Possible settings for this transfer function could be a lower and upper threshold, a toggle for inverting the result, etc\dots An example of this type of keying is displayed in the figure \ref{fig:02:luma_key_example}.
 
 \begin{figure}[htbp]
     \centering
@@ -134,7 +136,7 @@ This is only useful if the transparent parts are very black and opaque parts are
 \subsubsection{Chroma keying}
 As opposed to luma keying, chroma keying uses the color information of a video signal to discriminate the transparent and opaque parts of an image. In this case, the obtaining of the control signal is more complex and highly implementation dependant, so it will not be described here. However, it is worth mentioning that it should be done in a color model where the color information is explicit, as is the case of YUV, YIQ, YCbCr, YCtCp, HSV or HSL.\newline
 
-This keying is sometimes referred as the \textit{green-screen effect}, as it is usually configured to reject the green color\cite{OrtizRodriguez2018}. Historically, its most widespread usage has been in weather forecasts, where the presenter gets overlaid in front of a weather map. An example of this effect is shown in the figure \ref{fig:02:chroma_key_example}. The green color is commonly used because it rarely appears on skin-tones and costumes. However, if this is the case, a blue screen is used instead. The example shown in the figure \ref{fig:02:chroma_key_example} makes a more creative use of this effect, as it uses green suits on purpose.\newline
+This keying is sometimes referred as the \textit{green-screen effect}, as it is usually configured to reject the green color\cite{OrtizRodriguez2018}. Historically, its most widespread usage has been in weather forecasts, where the presenter gets overlaid in front of a weather map. The green color is commonly used because it rarely appears on skin-tones and costumes. However, if this is the case, a blue screen is used instead. The example shown in the figure \ref{fig:02:chroma_key_example} makes a more creative use of this effect, as it uses green suits on purpose.\newline
 
 \begin{figure}[htbp]
     \centering
@@ -149,12 +151,12 @@ This keying is sometimes referred as the \textit{green-screen effect}, as it is 
 \subsubsection{DVEs}
 DVE stands for Digital Video Effects. Although modern mixers are fully digital, this name dates to the analog mixers, when certain effects could not be achieved with analog circuitry. Mainly, this refers to the ability to perform geometrical transformations on an overlay, such as scaling, rotating and positioning it in space. For example both \glspl{usk} in the figure \ref{fig:02:usk_dsk_example} are using a \gls{dve}. Among all the keying techniques described here, this is the only one that can not be modelled using the mixing equation, although some implementations may use it to embed the transformed image into the background\cite{OrtizRodriguez2018}.\newline
 
-It is usually paired with animation controls, as it is useful to give dynamism to these effects. Moreover, it may offer the ability to generate borders around the transformed frame\cite{atemManual}. Some mixers offer the ability to perform more complex spatial transformations like 3D effects\cite{xvsManual}.\newline
+It is usually paired with animation controls, as it is useful to give dynamism to these effects. Moreover, it may offer the ability to generate borders around the transformed frame\cite{atemManual} and perform complex spatial transformations like 3D effects\cite{xvsManual}.\newline
 
 \subsection{Transitions}
 As mentioned earlier, \glspl{me} have two compositing buses which can be swapped with a transition. This transition is applied to the signal that carries the background information with the \glspl{usk} overlaid. Mixers offer a wide range of transition effects, the most basic of which will be explained hereafter.\newline
 
-Similarly to keyers, most transition effects also use the mixing equation \eqref{eq:mixing}. However, as opposed to keyers where the control signal is generated from an external source -except the pattern keying-, transition's control signal is internally generated and depends on the progress of the transition. This progress will be denoted with $t \in [0, 1]$. Therefore, the control signal will also be a function of the progress: $c(x, y, t)$.\newline
+Similarly to keyers, most transition effects also use the mixing equation \eqref{eq:mixing}. However, as opposed to keyers where the control signal is generated from an external source (except for the pattern keying), transition's control signal is internally generated and depends on the progress of the transition. This progress will be denoted with $t \in [0, 1]$. Therefore, the control signal will also be a function of the progress: $c(x, y, t)$.\newline
 
 From the operator's point of view, the progress of the transition can be controlled in two manners. The first one is pressing the automatic transition button. This will animate the $t$ parameter to travel from $0$ to $1$ in a preconfigured amount of time. The other way is to manually animate the $t$ parameter using a potentiometer. This potentiomenter is usually referred as the \textit{T-bar} due to its characteristic 'T' shape, as shown in the figure \ref{fig:02:tbar}.\newline
 
@@ -214,7 +216,7 @@ As opposed to the previous transition, this one uses a control signal that is no
 \section{Software based vision mixers}
 Recent increases in computational power have led to the possibility of manipulation video using software tools. This brings up the possibility of emulating the vision mixers described earlier using computer software. In essence, this allows using any computer for live video production, something that previously could only be done using dedicated equipment\cite{wikiSoftware_vision_mixer}.\newline
 
-With the purpose of achieving the maximum performance, software-based vision mixers use \gls{gpu} acceleration, this is, they use computer's dedicated graphics processing hardware to offload image processing from the \gls{cpu}. Computational-wise, the main limiting factor will be bit-rates across different buses of the computer, which will impact the maximum amount of sources that can be handled by a given machine.\newline
+With the purpose of achieving the maximum performance, software-based vision mixers use \gls{gpu} acceleration, this is, they use computer's dedicated graphics processing hardware to offload image processing from the \gls{cpu}. The main limiting factor will be bit-rates across different buses of the computer, which will impact the maximum amount of sources that can be handled by a given machine.\newline
 
 All vision mixers need to be able to ingest/output video from/to external sources, such as cameras. Most mixers do this though the \gls{sdi} interface. In order to do this using a software solution, the host computer must feature a \gls{sdi} \gls{io} card. However, if this is not present, network based solutions exist, namely, \gls{ip} based production. Moreover, all computers can output video though the graphic card's consumer-grade video outputs. Therefore, in a \gls{ip} based production environment, any computer can play the role of the vision mixer.\newline
 

@@ -42,13 +42,9 @@
 \RequirePackage{sectsty}
 \RequirePackage{listings}
 
-%Colores
-\definecolor{URLColor}{RGB}{105,178,255}
-
 %URLs
 \PassOptionsToPackage{hyphens}{url}
-\RequirePackage{hyperref}
-\hypersetup{urlcolor=URLColor}
+\RequirePackage[hidelinks]{hyperref}
 \urlstyle{same}
 
 %Estilo de código
